@@ -8,7 +8,6 @@
         :root {
             --bg-page: #F2F2F7;
             --card-white: #FFFFFF;
-            /* 盈亏色彩方案 - 深度加深 */
             --profit-bg: #FFF2F3;   
             --profit-text: #D85D61; 
             --loss-bg: #98D0BE;     /* 深绿背景 */
@@ -20,7 +19,6 @@
             --ths-color: #EE1B2D;
         }
 
-        /* 隐藏输入框箭头 */
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
@@ -28,17 +26,13 @@
             font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
             background-color: var(--bg-page);
             margin: 0;
-            /* 核心修改：增加顶部间距，适配刘海屏 */
-            padding: calc(env(safe-area-inset-top) + 40px) 16px env(safe-area-inset-bottom);
+            /* 顶部大间距，去掉标题 */
+            padding: calc(env(safe-area-inset-top) + 50px) 16px env(safe-area-inset-bottom);
             color: var(--text-main);
             -webkit-user-select: none;
         }
 
         .app-container { max-width: 450px; margin: 0 auto; }
-
-        header { display: flex; align-items: center; margin: 0 0 20px 4px; }
-        header .title-icon { font-size: 24px; margin-right: 8px; }
-        header h1 { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
 
         /* 录入卡片 */
         .input-card {
@@ -59,30 +53,45 @@
             justify-content: space-between;
         }
         
-        .label-with-icon { display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #3A3A3C; }
+        .label-with-icon { display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #3A3A3C; white-space: nowrap; }
         
         .brand-icon {
             width: 20px; height: 20px; border-radius: 5px; 
             display: inline-flex; align-items: center; justify-content: center;
-            color: white; font-size: 12px; margin-right: 8px; font-weight: bold;
+            color: white; font-size: 11px; margin-right: 8px; font-weight: bold;
         }
         .icon-ali { background: var(--ali-color); }
         .icon-ths { background: var(--ths-color); }
 
+        .input-wrap { display: flex; align-items: center; gap: 8px; }
+
         .field-group input { 
             border: none; background: transparent; font-size: 16px; 
-            font-weight: 600; color: var(--ios-blue); text-align: right; outline: none;
+            font-weight: 600; color: var(--text-main); text-align: right; outline: none;
+            width: 110px;
         }
-        .field-group input[type="number"] { color: var(--text-main); width: 140px; }
+
+        /* 修复日期选择器在某些手机上的显示 */
+        #targetDate { color: var(--ios-blue); font-weight: 700; width: auto; }
+
+        .sign-toggle {
+            background: #E5E5EA;
+            color: var(--text-main);
+            border: none;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
 
         .save-btn { 
             width: 100%; background: var(--ios-blue); color: white; border: none; 
             border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; 
             margin-top: 5px; box-shadow: 0 4px 12px rgba(0,122,255,0.2);
         }
-        .save-btn:active { opacity: 0.8; transform: scale(0.98); }
 
-        /* 汇总统计行 */
+        /* 汇总面板 */
         .stat-panel {
             display: flex;
             justify-content: space-between;
@@ -93,19 +102,13 @@
             margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
-
         .month-info { display: flex; align-items: baseline; gap: 8px; }
         .month-info .label { font-size: 12px; color: var(--text-sub); }
         .month-info .value { font-size: 20px; font-weight: 900; }
 
         .export-btn {
-            background: #F2F2F7;
-            color: var(--ios-blue);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 700;
+            background: #F2F2F7; color: var(--ios-blue); border: none;
+            padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 700;
         }
 
         /* 日历卡片 */
@@ -122,7 +125,6 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .weekday { font-size: 13px; color: var(--text-sub); text-align: center; padding-bottom: 10px; font-weight: 600; }
 
-        /* 日历核心样式优化 */
         .day-cell {
             aspect-ratio: 1 / 1.1;
             border-radius: 10px;
@@ -147,12 +149,7 @@
 <body>
 
     <div class="app-container">
-        <header>
-            <span class="title-icon">💰</span>
-            <h1>理财记录</h1>
-        </header>
-
-        <!-- 输入区域 -->
+        <!-- 录入面板 -->
         <div class="input-card">
             <div class="field-group">
                 <div class="label-with-icon">📅 记录日期</div>
@@ -160,16 +157,22 @@
             </div>
             <div class="field-group">
                 <div class="label-with-icon"><span class="brand-icon icon-ali">支</span> 支付宝</div>
-                <input type="number" id="alipay" placeholder="0.00" inputmode="decimal" step="any">
+                <div class="input-wrap">
+                    <button class="sign-toggle" onclick="toggleSign('alipay')">±</button>
+                    <input type="number" id="alipay" placeholder="0.00" inputmode="decimal" step="any">
+                </div>
             </div>
             <div class="field-group">
                 <div class="label-with-icon"><span class="brand-icon icon-ths">同</span> 同花顺</div>
-                <input type="number" id="ths" placeholder="0.00" inputmode="decimal" step="any">
+                <div class="input-wrap">
+                    <button class="sign-toggle" onclick="toggleSign('ths')">±</button>
+                    <input type="number" id="ths" placeholder="0.00" inputmode="decimal" step="any">
+                </div>
             </div>
-            <button class="save-btn" onclick="saveRecord()">保存今日收益</button>
+            <button class="save-btn" onclick="saveRecord()">保存收益数据</button>
         </div>
 
-        <!-- 汇总统计栏 -->
+        <!-- 统计汇总 -->
         <div class="stat-panel">
             <div class="month-info">
                 <span class="label" id="monthLabel">累计收益</span>
@@ -203,7 +206,7 @@
         const thsInp = document.getElementById('ths');
         const datePicker = document.getElementById('targetDate');
 
-        // 设置日期为今天
+        // 1. 修复日期初始化：精准获取当地 YYYY-MM-DD
         function setToday() {
             const now = new Date();
             const year = now.getFullYear();
@@ -212,22 +215,42 @@
             datePicker.value = `${year}-${month}-${day}`;
         }
 
+        // 正负号切换
+        function toggleSign(id) {
+            const el = document.getElementById(id);
+            if (!el.value || el.value === "0") return;
+            el.value = (parseFloat(el.value) * -1).toString();
+        }
+
         window.onload = () => {
             setToday();
             render();
         };
 
+        // 2. 修复存储逻辑：确保日期字符串不带有时区偏差
         function saveRecord() {
             const v1 = parseFloat(aliInp.value) || 0;
             const v2 = parseFloat(thsInp.value) || 0;
-            const selectedDate = new Date(datePicker.value.replace(/-/g, '/')); 
             
-            const key = `${selectedDate.getFullYear()}-${selectedDate.getMonth()+1}-${selectedDate.getDate()}`;
-            let db = JSON.parse(localStorage.getItem('fin_v_final_v9') || '{}');
-            db[key] = { a: v1, t: v2, total: (v1 + v2).toFixed(2) };
-            localStorage.setItem('fin_v_final_v9', JSON.stringify(db));
+            // 获取选择框的原始字符串 "YYYY-MM-DD"
+            const dateStr = datePicker.value; 
+            if (!dateStr) return;
 
-            viewDate = new Date(selectedDate);
+            const dbKey = 'fin_v_final_v11';
+            let db = JSON.parse(localStorage.getItem(dbKey) || '{}');
+            
+            db[dateStr] = {
+                a: v1,
+                t: v2,
+                total: (v1 + v2).toFixed(2)
+            };
+            
+            localStorage.setItem(dbKey, JSON.stringify(db));
+
+            // 将视图切换到保存的那个月份
+            const [y, m, d] = dateStr.split('-');
+            viewDate = new Date(y, m - 1, 1);
+            
             aliInp.value = ''; thsInp.value = '';
             render();
         }
@@ -240,31 +263,35 @@
             const y = viewDate.getFullYear();
             const m = viewDate.getMonth();
             document.getElementById('monthTitle').innerText = `${y}年 ${m + 1}月`;
-            document.getElementById('monthLabel').innerText = `${m + 1}月收益`;
+            document.getElementById('monthLabel').innerText = `${m + 1}月累计`;
 
             const firstDay = new Date(y, m, 1).getDay();
             const daysInMonth = new Date(y, m + 1, 0).getDate();
-            const db = JSON.parse(localStorage.getItem('fin_v_final_v9') || '{}');
+            const db = JSON.parse(localStorage.getItem('fin_v_final_v11') || '{}');
             let mTotal = 0;
 
             for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
 
+            // 获取当天的字符串用于高亮
             const now = new Date();
-            const todayKey = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
             for(let d=1; d<=daysInMonth; d++) {
-                const key = `${y}-${m+1}-${d}`;
-                const record = db[key];
+                const dayStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const record = db[dayStr];
                 const cell = document.createElement('div');
                 cell.className = 'day-cell';
                 
-                let isToday = (key === todayKey);
+                let isToday = (dayStr === todayStr);
                 let labelText = isToday ? '今' : d;
                 let html = `<div class="day-num ${isToday ? 'is-today-text' : ''}">${labelText}</div>`;
 
                 if(record) {
                     const val = parseFloat(record.total);
-                    if (y === viewDate.getFullYear() && m === viewDate.getMonth()) mTotal += val;
+                    // 仅统计当前视图月份的收益
+                    if (y === viewDate.getFullYear() && m === viewDate.getMonth()) {
+                        mTotal += val;
+                    }
                     const isPos = val >= 0;
                     cell.classList.add(isPos ? 'cell-profit' : 'cell-loss');
                     html += `<div class="day-val">${isPos?'+':''}${val}</div>`;
@@ -280,12 +307,16 @@
             totalDisplay.style.color = mTotal >= 0 ? 'var(--profit-text)' : 'var(--loss-text)';
         }
 
-        function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); render(); }
+        function changeMonth(s) {
+            viewDate.setMonth(viewDate.getMonth() + s);
+            render();
+        }
 
         function exportCSV() {
-            const db = JSON.parse(localStorage.getItem('fin_v_final_v9') || '{}');
+            const db = JSON.parse(localStorage.getItem('fin_v_final_v11') || '{}');
             if(Object.keys(db).length === 0) return alert('暂无数据');
-            let csv = "\ufeff日期,支付宝收益,同花顺收益,合计收益\n";
+            let csv = "\ufeff日期,支付宝收益,同花顺收益,总收益\n";
+            // 按日期排序
             Object.keys(db).sort().forEach(k => {
                 const r = db[k];
                 csv += `${k},${r.a},${r.t},${r.total}\n`;
@@ -293,11 +324,16 @@
             const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `理财记录明细_${viewDate.getMonth()+1}月.csv`;
+            a.download = `理财记录_${viewDate.getFullYear()}-${viewDate.getMonth()+1}.csv`;
             a.click();
         }
 
-        function resetData() { if(confirm('确定永久清除所有记录？')) { localStorage.removeItem('fin_v_final_v9'); render(); } }
+        function resetData() {
+            if(confirm('确定清空所有本地记录吗？')) {
+                localStorage.removeItem('fin_v_final_v11');
+                render();
+            }
+        }
     </script>
 </body>
 </html>
