@@ -8,7 +8,7 @@
         :root {
             --bg-page: #F2F2F7;
             --card-white: #FFFFFF;
-            /* 盈亏色彩方案 - 深度还原截图 */
+            /* 盈亏色彩方案 - 深度还原 */
             --profit-bg: #FFDDE0;   
             --profit-text: #D85D61; 
             --loss-bg: #C1E9DD;     
@@ -117,10 +117,7 @@
         <div class="card">
             <div class="field-group">
                 <div class="label-with-icon">📅 记录日期</div>
-                <div class="input-wrap">
-                    <!-- 增加了 onchange 事件，选完日期自动失焦收起系统弹窗 -->
-                    <input type="date" id="targetDate" onchange="this.blur(); render();">
-                </div>
+                <div class="input-wrap"><input type="date" id="targetDate"></div>
             </div>
             <div class="field-group">
                 <div class="label-with-icon"><span class="brand-icon icon-ali">支</span> 支付宝</div>
@@ -186,7 +183,7 @@
 
     <script>
         let viewDate = new Date();
-        const DB_KEY = 'fin_v_final_v21';
+        const DB_KEY = 'fin_v_final_v20'; // 独立存储键
 
         function setToday() {
             const now = new Date();
@@ -211,12 +208,9 @@
             db[dateStr] = { a: v1, t: v2, total: (v1 + v2).toFixed(2) };
             localStorage.setItem(DB_KEY, JSON.stringify(db));
 
+            // 保存后仅重置输入框并刷新日历色块，不弹出明细
             document.getElementById('alipay').value = ''; 
             document.getElementById('ths').value = '';
-            
-            // 保存后自动刷新到录入日期的那个月
-            const [y, m] = dateStr.split('-');
-            viewDate = new Date(y, m - 1, 1);
             render();
         }
 
@@ -284,12 +278,7 @@
             }
             const totalEl = document.getElementById('monthTotal');
             totalEl.innerText = `¥ ${mTotal.toFixed(2)}`;
-            totalDisplayColor(mTotal);
-        }
-
-        function totalDisplayColor(val) {
-            const el = document.getElementById('monthTotal');
-            el.style.color = val >= 0 ? 'var(--profit-text)' : 'var(--loss-text)';
+            totalEl.style.color = mTotal >= 0 ? 'var(--profit-text)' : 'var(--loss-text)';
         }
 
         function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); render(); }
@@ -297,7 +286,7 @@
             const db = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
             let csv = "\ufeff日期,支付宝收益,同花顺收益,总收益\n";
             Object.keys(db).sort().forEach(k => { const r = db[k]; csv += `${k},${r.a},${r.t},${r.total}\n`; });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = `理财明细.csv`; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = `理财记录.csv`; a.click();
         }
         function resetData() { if(confirm('重置全部？')) { localStorage.removeItem(DB_KEY); render(); } }
     </script>
