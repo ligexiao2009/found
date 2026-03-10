@@ -8,6 +8,7 @@
         :root {
             --bg-page: #F2F2F7;
             --card-white: #FFFFFF;
+            /* 盈亏色彩方案 */
             --profit-bg: #FFDDE0;   
             --profit-text: #D85D61; 
             --loss-bg: #C1E9DD;     
@@ -62,7 +63,6 @@
         .is-today-text { color: var(--ios-blue); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
         .cell-empty-today { border: 2px solid #E5E5EA; }
 
-        /* 弹窗 */
         .detail-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
         .detail-popup { background: white; width: 85%; max-width: 320px; border-radius: 24px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: popUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes popUp { from { opacity: 0; transform: scale(0.8) translateY(15px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -105,7 +105,6 @@
                 <span class="value" id="monthTotal">¥ 0.00</span>
             </div>
             <div class="action-btns">
-                <!-- 隐藏的 input 用于触发文件选择 -->
                 <input type="file" id="csvFileInput" accept=".csv" onchange="handleImport(this)">
                 <button class="mini-btn" onclick="document.getElementById('csvFileInput').click()">📥 导入</button>
                 <button class="mini-btn" onclick="exportCSV()">📤 导出</button>
@@ -146,7 +145,7 @@
 
     <script>
         let viewDate = new Date();
-        const DB_KEY = 'fin_v_final_v23';
+        const DB_KEY = 'fin_v_final_v24';
 
         function setToday() {
             const now = new Date();
@@ -174,38 +173,32 @@
             render();
         }
 
-        // --- 导入功能核心代码 ---
         function handleImport(input) {
             const file = input.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 const text = e.target.result;
                 const rows = text.split('\n');
                 let db = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
                 let count = 0;
-
-                // 从第二行开始读（跳过表头）
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].split(',');
                     if (cols.length >= 4) {
-                        const date = cols[0].trim().replace(/\//g, '-'); // 格式化日期为 YYYY-MM-DD
+                        const date = cols[0].trim().replace(/\//g, '-');
                         const ali = parseFloat(cols[1]) || 0;
                         const ths = parseFloat(cols[2]) || 0;
                         const total = parseFloat(cols[3]) || (ali + ths);
-
                         if (date.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
                             db[date] = { a: ali, t: ths, total: total.toFixed(2) };
                             count++;
                         }
                     }
                 }
-
                 localStorage.setItem(DB_KEY, JSON.stringify(db));
                 alert(`成功导入 ${count} 条记录！`);
                 render();
-                input.value = ''; // 清空选择
+                input.value = '';
             };
             reader.readAsText(file);
         }
@@ -223,7 +216,7 @@
             };
             fmt('popAli', record.a); fmt('popThs', record.t); fmt('popTotal', record.total);
             document.getElementById('delBtn').onclick = () => {
-                if(confirm('确定删除？')) { delete db[dateStr]; localStorage.setItem(DB_KEY, JSON.stringify(db)); closePop(); render(); }
+                if(confirm('确定删除该笔记录吗？')) { delete db[dateStr]; localStorage.setItem(DB_KEY, JSON.stringify(db)); closePop(); render(); }
             };
             document.getElementById('detailOverlay').style.display = 'flex';
         }
@@ -263,13 +256,29 @@
         }
 
         function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); render(); }
+
+        // 修改点：文件名增加动态年月日
         function exportCSV() {
             const db = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+            if(Object.keys(db).length === 0) return alert('当前没有可导出的数据');
+            
             let csv = "\ufeff日期,支付宝,同花顺,合计\n";
-            Object.keys(db).sort().forEach(k => { const r = db[k]; csv += `${k},${r.a},${r.t},${r.total}\n`; });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = `理财明细.csv`; a.click();
+            Object.keys(db).sort().forEach(k => { 
+                const r = db[k]; 
+                csv += `${k},${r.a},${r.t},${r.total}\n`; 
+            });
+
+            // 获取当前日期用于文件名
+            const now = new Date();
+            const fileNameDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+            const a = document.createElement('a'); 
+            a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'})); 
+            a.download = `理财明细_${fileNameDate}.csv`; 
+            a.click();
         }
-        function resetData() { if(confirm('重置全部？')) { localStorage.removeItem(DB_KEY); render(); } }
+
+        function resetData() { if(confirm('警告：此操作将永久清空所有记录！')) { localStorage.removeItem(DB_KEY); render(); } }
     </script>
 </body>
 </html>
