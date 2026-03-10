@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>财富看板-导出增强版</title>
+    <title>财富看板-导入导出版</title>
     <style>
         :root {
             --ali: #1677ff; --wx: #07c160; --ths: #ff4d4f;
@@ -14,10 +14,12 @@
         body { font-family: -apple-system, sans-serif; background: #f5f7fa; display: flex; justify-content: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box; }
         .app-card { background: #fff; border-radius: 24px; padding: 20px; width: 100%; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); height: fit-content; }
         
-        .summary-card { background: var(--summary-bg); padding: 15px 18px; border-radius: 16px; color: #fff; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 8px 20px rgba(20, 136, 204, 0.2); }
+        /* 顶部汇总 */
+        .summary-card { background: var(--summary-bg); padding: 15px 18px; border-radius: 16px; color: #fff; display: flex; align-items: center; justify-content: space-between; }
         .summary-val { font-size: 24px; font-weight: 700; font-family: "DIN Alternate", sans-serif; }
         .update-time { font-size: 10px; color: #999; text-align: right; margin: 5px 5px 20px 0; }
 
+        /* 输入区 */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 12px; margin-bottom: 20px; }
         .brand-line { width: 3px; height: 10px; border-radius: 2px; margin-right: 6px; }
         .label-wrap { display: flex; align-items: center; margin-bottom: 4px; font-size: 12px; color: #888; }
@@ -25,12 +27,13 @@
         .input-box::before { content: "¥"; position: absolute; left: 0; top: 50%; transform: translateY(-50%); color: #333; font-size: 14px; font-weight: 600; }
         input { width: 100%; padding: 8px 0 8px 18px; border: none; background: transparent; font-size: 18px; font-weight: 600; outline: none; }
 
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        button { border: none; padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.2s; }
-        .save-btn { background: #1488cc; color: white; }
-        .export-btn { background: #f0f2f5; color: #555; }
-        button:active { opacity: 0.8; transform: scale(0.98); }
-
+        /* 按钮组 */
+        .btn-stack { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .save-btn { background: #1488cc; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer; width: 100%; }
+        .secondary-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .sec-btn { background: #f0f2f5; color: #555; border: none; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; }
+        
+        /* 趋势曲线 */
         .chart-section { border-top: 1px solid #f0f0f0; padding-top: 15px; margin-top: 20px; }
         .section-title { font-size: 13px; color: #333; font-weight: 600; margin-bottom: 10px; }
         .chart-wrapper { width: 100%; height: 160px; position: relative; padding-left: 35px; box-sizing: border-box; }
@@ -39,6 +42,7 @@
         .chart-path { fill: none; stroke: #1488cc; stroke-width: 2.5; }
         .chart-area { fill: url(#grad); opacity: 0.1; }
 
+        /* 历史列表 */
         .history-list { max-height: 200px; overflow-y: auto; margin-top: 10px; border-top: 1px solid #f9f9f9; }
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f9f9f9; }
         .hist-amount { font-size: 14px; font-weight: 700; color: #333; }
@@ -68,9 +72,14 @@
         <div class="item"><div class="label-wrap"><div class="brand-line" style="background:var(--gjj)"></div>公积金</div><div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="provident" placeholder="0"></div></div>
     </div>
 
-    <div class="btn-group">
-        <button class="save-btn" onclick="saveRecord()">保存快照</button>
-        <button class="export-btn" onclick="exportToExcel()">导出Excel</button>
+    <div class="btn-stack">
+        <button class="save-btn" onclick="saveRecord()">保存当前资产快照</button>
+        <div class="secondary-btns">
+            <div class="sec-btn" onclick="exportToExcel()">导出Excel</div>
+            <div class="sec-btn" onclick="document.getElementById('importFile').click()">导入记录</div>
+        </div>
+        <!-- 隐藏的导入文件控件 -->
+        <input type="file" id="importFile" style="display:none" accept=".csv" onchange="importFromExcel(this)">
     </div>
 
     <div class="history-section">
@@ -79,7 +88,7 @@
     </div>
 
     <div class="chart-section" id="chart-section" style="display:none;">
-        <div class="section-title">资产趋势图</div>
+        <div class="section-title">资产走势趋势图</div>
         <div class="chart-wrapper">
             <svg class="chart-svg" id="svg-chart">
                 <defs><linearGradient id="grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1488cc"/><stop offset="100%" stop-color="#fff"/></linearGradient></defs>
@@ -102,7 +111,7 @@
 
     window.onload = () => {
         inputs.forEach(i => {
-            const saved = localStorage.getItem('vExcel_' + i.id);
+            const saved = localStorage.getItem('vInp_' + i.id);
             if (saved) i.value = saved;
         });
         renderHistory();
@@ -122,14 +131,14 @@
         const now = new Date();
         const shortDate = `${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
         const fullTime = now.toLocaleString('zh-CN', { hour12: false });
-        let records = JSON.parse(localStorage.getItem('vExcel_history') || "[]");
+        let records = JSON.parse(localStorage.getItem('vInp_history') || "[]");
         records.unshift({ amount: amountNum, time: fullTime, date: shortDate });
-        localStorage.setItem('vExcel_history', JSON.stringify(records));
+        localStorage.setItem('vInp_history', JSON.stringify(records));
         renderHistory();
     }
 
     function renderHistory() {
-        let records = JSON.parse(localStorage.getItem('vExcel_history') || "[]");
+        let records = JSON.parse(localStorage.getItem('vInp_history') || "[]");
         histList.innerHTML = records.map((r, index) => {
             let diffHtml = "";
             if (index < records.length - 1) {
@@ -166,10 +175,9 @@
     }
 
     function exportToExcel() {
-        let records = JSON.parse(localStorage.getItem('vExcel_history') || "[]");
+        let records = JSON.parse(localStorage.getItem('vInp_history') || "[]");
         if (records.length === 0) return alert("没有记录可导出");
-        
-        let csvContent = "\uFEFF保存日期,资产总额,对比增长\n"; // 添加BOM防止乱码
+        let csvContent = "\uFEFF保存日期,资产总额,对比增长\n"; 
         records.forEach((r, index) => {
             let diffStr = "初始记录";
             if (index < records.length - 1) {
@@ -178,28 +186,68 @@
             }
             csvContent += `${r.time},${r.amount.toFixed(2)},${diffStr}\n`;
         });
-
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `财富记录_${new Date().toLocaleDateString()}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `财富记录_${new Date().toLocaleDateString()}.csv`;
         link.click();
-        document.body.removeChild(link);
+    }
+
+    function importFromExcel(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split("\n");
+            let newRecords = [];
+            // 跳过表头
+            for (let i = 1; i < lines.length; i++) {
+                const row = lines[i].split(",");
+                if (row.length < 2) continue;
+                const fullTime = row[0].trim();
+                const amount = parseFloat(row[1]);
+                if (isNaN(amount)) continue;
+                
+                // 提取简易日期 03-10
+                const dateMatch = fullTime.match(/(\d{1,2})[\/\-](\d{1,2})/);
+                const shortDate = dateMatch ? `${dateMatch[1].padStart(2,'0')}-${dateMatch[2].padStart(2,'0')}` : "01-01";
+                
+                newRecords.push({ amount: amount, time: fullTime, date: shortDate });
+            }
+            
+            if (newRecords.length > 0) {
+                // 简单排重合并逻辑
+                let oldRecords = JSON.parse(localStorage.getItem('vInp_history') || "[]");
+                let combined = [...newRecords, ...oldRecords];
+                // 按时间排重（简单示例：以时间字符串为key）
+                const unique = combined.reduce((acc, curr) => {
+                    if (!acc.find(item => item.time === curr.time)) acc.push(curr);
+                    return acc;
+                }, []);
+                // 重新按日期排序（最新的在前）
+                unique.sort((a, b) => new Date(b.time.replace(/-/g,'/')) - new Date(a.time.replace(/-/g,'/')));
+                
+                localStorage.setItem('vInp_history', JSON.stringify(unique));
+                renderHistory();
+                alert("导入成功！");
+            }
+            input.value = ""; // 清空选择
+        };
+        reader.readAsText(file);
     }
 
     function deleteHistory(index) {
-        let records = JSON.parse(localStorage.getItem('vExcel_history') || "[]");
+        let records = JSON.parse(localStorage.getItem('vInp_history') || "[]");
         records.splice(index, 1);
-        localStorage.setItem('vExcel_history', JSON.stringify(records));
+        localStorage.setItem('vInp_history', JSON.stringify(records));
         renderHistory();
     }
 
     inputs.forEach(i => i.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^\d.]/g, "").replace(/\.(?=.*\.)/g, "");
-        localStorage.setItem('vExcel_' + e.target.id, e.target.value);
+        localStorage.setItem('vInp_' + e.target.id, e.target.value);
         updateDisplay(true);
     }));
 </script>
