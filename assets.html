@@ -3,66 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>财富看板-极致版</title>
+    <title>财富看板-同步修复版</title>
     <style>
         :root {
             --ali: #1677ff; --wx: #07c160; --ths: #ff4d4f;
             --cry: #f7931a; --cmb: #c51d24; --gjj: #0052d9;
             --up: #2ecc71; --down: #e74c3c;
-            --btn-blue: #0081cc;
-            --app-bg: #f2f4f7;
+            --btn-blue: #0081cc; --app-bg: #f2f4f7;
         }
-        body { font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif; background-color: var(--app-bg); display: flex; justify-content: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--app-bg); display: flex; justify-content: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box; }
         .app-card { background: #fff; border-radius: 28px; padding: 24px; width: 100%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); height: fit-content; }
-        
-        /* 顶部资产大卡片 */
-        .summary-card { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 22px; border-radius: 22px; color: #fff; box-shadow: 0 12px 24px rgba(30, 60, 114, 0.2); margin-bottom: 5px; }
-        .summary-val { font-size: 30px; font-weight: 700; font-family: "DIN Alternate", sans-serif; }
-        .update-time { font-size: 10px; color: #a0aec0; text-align: right; margin-bottom: 20px; }
-
-        /* 输入网格 */
+        .summary-card { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 20px; border-radius: 20px; color: #fff; box-shadow: 0 10px 20px rgba(30, 60, 114, 0.2); }
+        .summary-val { font-size: 28px; font-weight: 700; font-family: "DIN Alternate", sans-serif; }
+        .update-time { font-size: 10px; color: #a0aec0; text-align: right; margin: 8px 0 20px 0; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 12px; margin-bottom: 25px; }
         .label-wrap { display: flex; align-items: center; margin-bottom: 4px; font-size: 12px; color: #888; }
         .brand-line { width: 3px; height: 10px; border-radius: 2px; margin-right: 6px; }
         .input-box { position: relative; border-bottom: 1.5px solid #eee; }
         .input-box::before { content: "¥"; position: absolute; left: 0; top: 50%; transform: translateY(-50%); color: #333; font-size: 14px; font-weight: 600; }
-        input { width: 100%; padding: 8px 0 8px 18px; border: none; background: transparent; font-size: 18px; font-weight: 600; outline: none; }
-
-        /* 按钮组 */
-        .btn-stack { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
-        .save-btn { background: #1488cc; color: white; border: none; padding: 12px; border-radius: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .save-btn:active { transform: scale(0.97); }
-
-        /* 精致导入导出按钮 */
+        input { width: 100%; padding: 8px 0 8px 18px; border: none; background: transparent; font-size: 18px; font-weight: 600; outline: none; color: #333; }
+        .btn-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
+        .save-btn { background: #1488cc; color: white; border: none; padding: 13px; border-radius: 14px; font-weight: 600; cursor: pointer; }
         .secondary-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .sec-btn { 
-            background: #f5f5f7; 
-            color: var(--btn-blue); 
-            border: 1px solid #eef0f2; 
-            padding: 10px 14px; 
-            border-radius: 14px; 
-            font-size: 15px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .sec-btn:active { transform: scale(0.95); background: #ebedf0; }
-        .btn-icon { width: 20px; height: 20px; margin-right: 8px; }
-
-        /* 历史明细 */
+        .sec-btn { background: #f5f5f7; color: var(--btn-blue); border: 1px solid #eef0f2; padding: 10px; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-icon { width: 18px; height: 18px; margin-right: 6px; }
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f9f9f9; }
         .hist-amount { font-size: 15px; font-weight: 700; }
         .hist-time { font-size: 10px; color: #bbb; }
         .del-btn { width: 28px; height: 28px; border-radius: 8px; background: #fff1f0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .del-btn svg { width: 14px; height: 14px; fill: #ff4d4f; }
-
-        /* 趋势曲线图 */
-        .chart-box { width: 100%; height: 160px; margin-top: 15px; padding-left: 35px; box-sizing: border-box; }
-        .chart-svg { width: 100%; height: 130px; overflow: visible; }
+        .chart-box { width: 100%; height: 150px; margin-top: 15px; padding-left: 30px; box-sizing: border-box; }
+        .chart-svg { width: 100%; height: 120px; overflow: visible; }
         .axis-label { font-size: 9px; fill: #aaa; }
     </style>
 </head>
@@ -70,93 +40,79 @@
 
 <div class="app-card">
     <div class="summary-card">
-        <div style="font-size: 11px; opacity: 0.7; margin-bottom: 4px;">NET WORTH / 净资产总额</div>
+        <div style="font-size: 11px; opacity: 0.7; margin-bottom: 4px;">NET WORTH / 净资产总计</div>
         <div class="summary-val">¥ <span id="res">0.00</span></div>
     </div>
-    <div class="update-time">最后记账：<span id="last-update">从未</span></div>
+    <div class="update-time">编辑于：<span id="last-update">从未</span></div>
 
     <div class="grid">
         <div class="item">
             <div class="label-wrap"><div class="brand-line" style="background:var(--ali)"></div>支付宝</div>
-            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="alipay" placeholder="0.00"></div>
+            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="alipay" data-name="支付宝" placeholder="0.00"></div>
         </div>
         <div class="item">
             <div class="label-wrap"><div class="brand-line" style="background:var(--wx)"></div>微信支付</div>
-            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="wechat" placeholder="0.00"></div>
+            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="wechat" data-name="微信" placeholder="0.00"></div>
         </div>
         <div class="item">
             <div class="label-wrap"><div class="brand-line" style="background:var(--ths)"></div>同花顺</div>
-            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="ths" placeholder="0.00"></div>
+            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="ths" data-name="同花顺" placeholder="0.00"></div>
         </div>
         <div class="item">
             <div class="label-wrap"><div class="brand-line" style="background:var(--cry)"></div>加密币</div>
-            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="crypto" placeholder="0.00"></div>
+            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="crypto" data-name="加密币" placeholder="0.00"></div>
         </div>
         <div class="item">
             <div class="label-wrap"><div class="brand-line" style="background:var(--cmb)"></div>招商银行</div>
-            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="cmb" placeholder="0.00"></div>
+            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="cmb" data-name="招行" placeholder="0.00"></div>
         </div>
         <div class="item">
             <div class="label-wrap"><div class="brand-line" style="background:var(--gjj)"></div>公积金</div>
-            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="provident" placeholder="0.00"></div>
+            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="provident" data-name="公积金" placeholder="0.00"></div>
         </div>
     </div>
 
     <div class="btn-stack">
         <button class="save-btn" onclick="saveRecord()">保存当前资产快照</button>
         <div class="secondary-btns">
-            <!-- 优化图标后的导入按钮 -->
             <button class="sec-btn" onclick="document.getElementById('fileIn').click()">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M3 7C3 5.89543 3.89543 5 5 5H9.5L11.5 7H19C20.1046 7 21 7.89543 21 9V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z" fill="url(#folderGrad)""")/>>
-                    <path d="M12 15L12 9M12 15L10 13M12 15L14 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round""")/>>
-                    <defs>
-                        <linearGradient id="folderGrad" x1="3" y1="5" x2="21" y2="19" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#00A2FF""")/>><stop offset="1" stop-color="#0066FF""")/>>
-                        </linearGradient>
-                    </defs>
-                </svg>导入
+                <svg class="btn-icon" viewBox="0 0 24 24"><path d="M3 7C3 5.8 3.8 5 5 5H9.5L11.5 7H19C20.1 7 21 7.8 21 9V17C21 18.1 20.1 19 19 19H5C3.8 19 3 18.1 3 17V7Z" fill="#0081cc""")/>><path d="M12 15L12 9M12 15L10 13M12 15L14 13" stroke="white" stroke-width="2" stroke-linecap="round" fill="none""")/>></svg>导入
             </button>
-            <!-- 优化图标后的导出按钮 -->
             <button class="sec-btn" onclick="exportData()">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M3 7C3 5.89543 3.89543 5 5 5H9.5L11.5 7H19C20.1046 7 21 7.89543 21 9V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z" fill="url(#folderGrad)""")/>>
-                    <path d="M12 9L12 15M12 9L10 11M12 9L14 11" stroke="#FF4D4F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round""")/>>
-                </svg>导出
+                <svg class="btn-icon" viewBox="0 0 24 24"><path d="M3 7C3 5.8 3.8 5 5 5H9.5L11.5 7H19C20.1 7 21 7.8 21 9V17C21 18.1 20.1 19 19 19H5C3.8 19 3 18.1 3 17V7Z" fill="#0081cc""")/>><path d="M12 9L12 15M12 9L10 11M12 9L14 11" stroke="#FF4D4F" stroke-width="2.5" stroke-linecap="round" fill="none""")/>></svg>导出
             </button>
         </div>
         <input type="file" id="fileIn" style="display:none" accept=".csv" onchange="importData(this)">
     </div>
 
     <div class="history-section">
-        <div style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">资产历史明细</div>
+        <div style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">资产历史轨迹</div>
         <div class="history-list" id="hist-list"></div>
-        
         <div class="chart-box" id="chart-wrap" style="display:none;">
             <svg class="chart-svg" id="svg-chart">
                 <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1488cc" stop-opacity="0.2""")/>><stop offset="100%" stop-color="#fff" stop-opacity="0""")/>></linearGradient></defs>
                 <text x="-32" y="8" class="axis-label" id="y-max"></text>
-                <text x="-32" y="130" class="axis-label" id="y-min"></text>
-                <text x="0" y="150" class="axis-label" id="x-start"></text>
-                <text x="100%" y="150" class="axis-label" text-anchor="end" id="x-end"></text>
+                <text x="-32" y="120" class="axis-label" id="y-min"></text>
+                <text x="0" y="140" class="axis-label" id="x-start"></text>
+                <text x="100%" y="140" class="axis-label" text-anchor="end" id="x-end"></text>
                 <path fill="url(#g)" id="c-area"></path>
-                <path fill="none" stroke="#1488cc" stroke-width="2.5" stroke-linecap="round" id="c-line"></path>
+                <path fill="none" stroke="#1488cc" stroke-width="2.5" id="c-line"></path>
             </svg>
         </div>
     </div>
 </div>
 
 <script>
-    // 逻辑代码保持之前的稳定版本
     const inputs = document.querySelectorAll('.asset-input');
     const resDisp = document.getElementById('res');
     const timeDisp = document.getElementById('last-update');
     const histList = document.getElementById('hist-list');
+    const ASSET_KEYS = ['alipay', 'wechat', 'ths', 'crypto', 'cmb', 'provident'];
 
     window.onload = () => {
-        inputs.forEach(i => {
-            const v = localStorage.getItem('v_lux_' + i.id);
-            if (v) i.value = v;
+        ASSET_KEYS.forEach(k => {
+            const v = localStorage.getItem('v_fix_' + k);
+            if (v) document.getElementById(k).value = v;
         });
         render();
         update(false);
@@ -170,19 +126,23 @@
     }
 
     function saveRecord() {
-        const val = parseFloat(resDisp.innerText.replace(/,/g, ''));
-        if (val <= 0) return;
+        const total = parseFloat(resDisp.innerText.replace(/,/g, ''));
+        if (total <= 0) return;
         const now = new Date();
         const fullTime = now.toLocaleString('zh-CN', {hour12: false});
         const day = `${now.getMonth()+1}-${now.getDate()}`;
-        let h = JSON.parse(localStorage.getItem('v_lux_hist') || "[]");
-        h.unshift({amount: val, time: fullTime, day: day});
-        localStorage.setItem('v_lux_hist', JSON.stringify(h));
+        
+        let detail = {};
+        ASSET_KEYS.forEach(k => detail[k] = document.getElementById(k).value || "0");
+
+        let h = JSON.parse(localStorage.getItem('v_fix_hist') || "[]");
+        h.unshift({amount: total, time: fullTime, day: day, detail: detail});
+        localStorage.setItem('v_fix_hist', JSON.stringify(h));
         render();
     }
 
     function render() {
-        let h = JSON.parse(localStorage.getItem('v_lux_hist') || "[]");
+        let h = JSON.parse(localStorage.getItem('v_fix_hist') || "[]");
         histList.innerHTML = h.map((r, i) => {
             let diffHtml = "";
             if (i < h.length - 1) {
@@ -191,7 +151,7 @@
             }
             return `<div class="history-item">
                 <div><div class="hist-amount">¥ ${r.amount.toLocaleString()} ${diffHtml}</div><div class="hist-time">${r.time}</div></div>
-                <div class="del-btn" onclick="del(${i})"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z""")/>></svg></div>
+                <div class="del-btn" onclick="del(${i})"><svg width="14" height="14" fill="#ff4d4f" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z""")/>></svg></div>
             </div>`;
         }).join('');
         draw(h);
@@ -204,15 +164,13 @@
         const data = [...h].reverse();
         const vals = data.map(r => r.amount);
         const w = document.getElementById('svg-chart').clientWidth;
-        const ht = 130;
+        const ht = 120;
         let max = Math.max(...vals), min = Math.min(...vals);
         if (max === min) { max += 100; min -= 100; }
-        
         document.getElementById('y-max').textContent = (max/10000).toFixed(1)+'w';
         document.getElementById('y-min').textContent = (min/10000).toFixed(1)+'w';
         document.getElementById('x-start').textContent = data[0].day;
         document.getElementById('x-end').textContent = data[data.length-1].day;
-
         const pts = vals.map((v, i) => {
             const x = (i/(vals.length-1)) * w;
             const y = ht - ((v-min)/(max-min)) * ht;
@@ -224,48 +182,74 @@
     }
 
     function exportData() {
-        let h = JSON.parse(localStorage.getItem('v_lux_hist') || "[]");
-        if (!h.length) return;
-        let csv = "\uFEFF时间,金额\n" + h.map(r => `${r.time},${r.amount}`).join("\n");
+        let h = JSON.parse(localStorage.getItem('v_fix_hist') || "[]");
+        if (!h.length) return alert("暂无数据");
+        let csv = "\uFEFF时间,总计," + ASSET_KEYS.map(k => document.getElementById(k).getAttribute('data-name')).join(",") + "\n";
+        csv += h.map(r => {
+            let row = [r.time, r.amount];
+            ASSET_KEYS.forEach(k => row.push(r.detail ? (r.detail[k] || "0") : "0"));
+            return row.join(",");
+        }).join("\n");
         const b = new Blob([csv], {type: 'text/csv'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(b);
-        a.download = `财富快照.csv`;
+        a.download = `财富备份_${new Date().toLocaleDateString()}.csv`;
         a.click();
     }
 
     function importData(inp) {
-        const f = inp.files[0];
-        if (!f) return;
+        const file = inp.files[0];
+        if (!file) return;
         const r = new FileReader();
-        r.onload = (e) => {
-            const lines = e.target.result.split("\n").slice(1);
-            let n = lines.map(l => {
-                const p = l.split(",");
-                if (p.length < 2) return null;
-                const amt = parseFloat(p[1]);
-                return {amount: amt, time: p[0], day: p[0].substring(5,10).replace('/','-')};
-            }).filter(x => x && !isNaN(x.amount));
-            localStorage.setItem('v_lux_hist', JSON.stringify(n));
-            render();
-            alert("同步成功");
+        r.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split("\n").filter(l => l.trim() !== "");
+            let imported = [];
+            // 从索引 1 开始（跳过表头）
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(",");
+                if (cols.length < 2) continue;
+                let detail = {};
+                ASSET_KEYS.forEach((key, idx) => {
+                    detail[key] = cols[idx + 2] ? cols[idx + 2].trim() : "0";
+                });
+                imported.push({
+                    time: cols[0].trim(),
+                    amount: parseFloat(cols[1]),
+                    day: cols[0].split(" ")[0].split(/[\/\-]/).slice(1).join("-"),
+                    detail: detail
+                });
+            }
+            if (imported.length > 0) {
+                localStorage.setItem('v_fix_hist', JSON.stringify(imported));
+                if (confirm("导入成功！是否将最新记录回填到输入框？")) {
+                    const latest = imported[0];
+                    ASSET_KEYS.forEach(k => {
+                        const val = latest.detail ? latest.detail[k] : "0";
+                        document.getElementById(k).value = val;
+                        localStorage.setItem('v_fix_' + k, val);
+                    });
+                    update(true);
+                }
+                render();
+            }
+            inp.value = "";
         };
-        r.readAsText(f);
-        inp.value = "";
+        r.readAsText(file);
     }
 
     function del(idx) {
-        if(confirm("确定删除该记录吗？")) {
-            let h = JSON.parse(localStorage.getItem('v_lux_hist') || "[]");
+        if(confirm("确定删除？")) {
+            let h = JSON.parse(localStorage.getItem('v_fix_hist') || "[]");
             h.splice(idx, 1);
-            localStorage.setItem('v_lux_hist', JSON.stringify(h));
+            localStorage.setItem('v_fix_hist', JSON.stringify(h));
             render();
         }
     }
 
     inputs.forEach(i => i.addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^\d.]/g, "").replace(/\.(?=.*\.)/g, "");
-        localStorage.setItem('v_lux_' + e.target.id, e.target.value);
+        localStorage.setItem('v_fix_' + e.target.id, e.target.value);
         update(true);
     }));
 </script>
