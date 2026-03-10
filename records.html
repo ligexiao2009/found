@@ -26,8 +26,8 @@
             font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
             background-color: var(--bg-page);
             margin: 0;
-            /* 修改：向上移动，减小顶部间距 (保持 safe-area 兼容) */
-            padding: calc(env(safe-area-inset-top) + 15px) 16px env(safe-area-inset-bottom);
+            /* 再次向上移动，压缩顶部间距 */
+            padding: calc(env(safe-area-inset-top) + 5px) 12px env(safe-area-inset-bottom);
             color: var(--text-main);
             -webkit-user-select: none;
         }
@@ -38,9 +38,9 @@
         .input-card {
             background: var(--card-white);
             border-radius: 20px;
-            padding: 16px;
+            padding: 14px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .field-group {
@@ -53,25 +53,49 @@
             justify-content: space-between;
         }
         
-        .label-with-icon { display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #3A3A3C; }
+        .label-with-icon { 
+            display: flex; 
+            align-items: center; 
+            font-size: 14px; 
+            font-weight: 600; 
+            color: #3A3A3C;
+            white-space: nowrap; /* 锁定左侧不换行 */
+        }
         
         .brand-icon {
-            width: 20px; height: 20px; border-radius: 5px; 
+            width: 18px; height: 18px; border-radius: 4px; 
             display: inline-flex; align-items: center; justify-content: center;
-            color: white; font-size: 11px; margin-right: 8px; font-weight: bold;
+            color: white; font-size: 10px; margin-right: 6px; font-weight: bold;
         }
         .icon-ali { background: var(--ali-color); }
         .icon-ths { background: var(--ths-color); }
 
-        .input-wrap { display: flex; align-items: center; gap: 8px; }
-
-        .field-group input { 
-            border: none; background: transparent; font-size: 16px; 
-            font-weight: 600; color: var(--text-main); text-align: right; outline: none;
-            width: 105px;
+        /* 核心修复：锁定日期在一行，并优化输入框宽度 */
+        .input-wrap { 
+            display: flex; 
+            align-items: center; 
+            gap: 4px; 
+            flex-shrink: 0;
+            white-space: nowrap; 
         }
 
-        #targetDate { color: var(--ios-blue); font-weight: 700; }
+        #targetDate { 
+            color: var(--ios-blue); 
+            font-weight: 700; 
+            font-size: 15px; /* 稍微调小字号确保不换行 */
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 0;
+            width: 135px; /* 固定宽度防止抖动 */
+            text-align: right;
+        }
+
+        .field-group input[type="number"] { 
+            border: none; background: transparent; font-size: 16px; 
+            font-weight: 600; color: var(--text-main); text-align: right; outline: none;
+            width: 100px;
+        }
 
         .sign-toggle {
             background: #E5E5EA;
@@ -79,15 +103,14 @@
             border: none;
             border-radius: 6px;
             padding: 4px 8px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            cursor: pointer;
         }
 
         .save-btn { 
             width: 100%; background: var(--ios-blue); color: white; border: none; 
             border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; 
-            margin-top: 5px; box-shadow: 0 4px 12px rgba(0,122,255,0.2);
+            margin-top: 4px;
         }
 
         /* 汇总面板 */
@@ -95,64 +118,49 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 18px;
+            padding: 12px 16px;
             background: #fff;
-            border-radius: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border-radius: 16px;
+            margin-bottom: 12px;
         }
-        .month-info { display: flex; align-items: baseline; gap: 8px; }
-        .month-info .label { font-size: 12px; color: var(--text-sub); }
-        .month-info .value { font-size: 20px; font-weight: 900; }
-
-        .export-btn {
-            background: #F2F2F7; color: var(--ios-blue); border: none;
-            padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 700;
-        }
+        .month-info .value { font-size: 19px; font-weight: 900; }
+        .export-btn { background: #F2F2F7; color: var(--ios-blue); border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; }
 
         /* 日历卡片 */
         .calendar-card {
             background: var(--card-white);
-            border-radius: 24px;
-            padding: 20px 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-radius: 22px;
+            padding: 16px 10px;
         }
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .cal-title { font-size: 18px; font-weight: 800; }
-        .nav-btn { background: #F2F2F7; border: none; width: 36px; height: 36px; border-radius: 12px; font-size: 20px; }
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .cal-title { font-size: 17px; font-weight: 800; }
+        .nav-btn { background: #F2F2F7; border: none; width: 32px; height: 32px; border-radius: 10px; font-size: 18px; }
 
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .weekday { font-size: 13px; color: var(--text-sub); text-align: center; padding-bottom: 10px; font-weight: 600; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .weekday { font-size: 12px; color: var(--text-sub); text-align: center; padding-bottom: 8px; font-weight: 600; }
 
-        .day-cell {
-            aspect-ratio: 1 / 1.1;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        /* 日历大数字样式 */
-        .day-num { font-size: 17px; font-weight: 700; margin-bottom: 1px; }
-        .day-val { font-size: 10px; font-weight: 800; transform: scale(0.95); }
+        .day-cell { aspect-ratio: 1 / 1.1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .day-num { font-size: 16px; font-weight: 700; }
+        .day-val { font-size: 9px; font-weight: 800; }
 
         .cell-profit { background-color: var(--profit-bg) !important; color: var(--profit-text) !important; }
         .cell-loss { background-color: var(--loss-bg) !important; color: var(--loss-text) !important; }
-        
-        .is-today-text { color: var(--ios-blue); font-weight: 900; text-decoration: underline; text-underline-offset: 3px; }
-        .cell-empty-today { border: 2px solid #E5E5EA; }
+        .is-today-text { color: var(--ios-blue); text-decoration: underline; text-underline-offset: 2px; }
+        .cell-empty-today { border: 1.5px solid #E5E5EA; }
 
-        .tool-bar { text-align: center; margin-top: 30px; font-size: 11px; color: var(--text-sub); opacity: 0.5; }
+        .tool-bar { text-align: center; margin-top: 20px; font-size: 11px; color: var(--text-sub); opacity: 0.5; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- 录入面板 -->
         <div class="input-card">
             <div class="field-group">
+                <!-- 增加图标并强制一行 -->
                 <div class="label-with-icon">📅 记录日期</div>
-                <input type="date" id="targetDate">
+                <div class="input-wrap">
+                    <input type="date" id="targetDate">
+                </div>
             </div>
             <div class="field-group">
                 <div class="label-with-icon"><span class="brand-icon icon-ali">支</span> 支付宝</div>
@@ -168,35 +176,30 @@
                     <input type="number" id="ths" placeholder="0.00" inputmode="decimal" step="any">
                 </div>
             </div>
-            <button class="save-btn" onclick="saveRecord()">保存收益数据</button>
+            <button class="save-btn" onclick="saveRecord()">保存数据</button>
         </div>
 
-        <!-- 汇总面板 -->
         <div class="stat-panel">
-            <div class="month-info">
-                <span class="label" id="monthLabel">累计收益</span>
+            <div class="month-info" style="display:flex; align-items:baseline; gap:6px;">
+                <span style="font-size:11px; color:var(--text-sub)" id="monthLabel">累计收益</span>
                 <span class="value" id="monthTotal">¥ 0.00</span>
             </div>
-            <button class="export-btn" onclick="exportCSV()">📥 导出 CSV</button>
+            <button class="export-btn" onclick="exportCSV()">导出 CSV</button>
         </div>
 
-        <!-- 日历面板 -->
         <div class="calendar-card">
             <div class="cal-header">
                 <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
                 <div class="cal-title" id="monthTitle">加载中...</div>
                 <button class="nav-btn" onclick="changeMonth(1)">›</button>
             </div>
-
             <div class="calendar-grid" id="calendarGrid">
                 <div class="weekday">日</div><div class="weekday">一</div><div class="weekday">二</div>
                 <div class="weekday">三</div><div class="weekday">四</div><div class="weekday">五</div><div class="weekday">六</div>
             </div>
         </div>
 
-        <div class="tool-bar">
-            <span onclick="resetData()">🔄 重置全部数据</span>
-        </div>
+        <div class="tool-bar"><span onclick="resetData()">🔄 重置全部数据</span></div>
     </div>
 
     <script>
@@ -205,7 +208,6 @@
         const thsInp = document.getElementById('ths');
         const datePicker = document.getElementById('targetDate');
 
-        // 设置日期为今天 (YYYY-MM-DD格式，精准到日)
         function setToday() {
             const now = new Date();
             const year = now.getFullYear();
@@ -220,10 +222,7 @@
             el.value = (parseFloat(el.value) * -1).toString();
         }
 
-        window.onload = () => {
-            setToday();
-            render();
-        };
+        window.onload = () => { setToday(); render(); };
 
         function saveRecord() {
             const v1 = parseFloat(aliInp.value) || 0;
@@ -231,21 +230,12 @@
             const dateStr = datePicker.value; 
             if (!dateStr) return;
 
-            const dbKey = 'fin_v_final_v12';
-            let db = JSON.parse(localStorage.getItem(dbKey) || '{}');
-            
-            db[dateStr] = {
-                a: v1,
-                t: v2,
-                total: (v1 + v2).toFixed(2)
-            };
-            
-            localStorage.setItem(dbKey, JSON.stringify(db));
+            let db = JSON.parse(localStorage.getItem('fin_v_final_v13') || '{}');
+            db[dateStr] = { a: v1, t: v2, total: (v1 + v2).toFixed(2) };
+            localStorage.setItem('fin_v_final_v13', JSON.stringify(db));
 
-            // 更新视图
-            const [y, m, d] = dateStr.split('-');
+            const [y, m] = dateStr.split('-');
             viewDate = new Date(y, m - 1, 1);
-            
             aliInp.value = ''; thsInp.value = '';
             render();
         }
@@ -262,7 +252,7 @@
 
             const firstDay = new Date(y, m, 1).getDay();
             const daysInMonth = new Date(y, m + 1, 0).getDate();
-            const db = JSON.parse(localStorage.getItem('fin_v_final_v12') || '{}');
+            const db = JSON.parse(localStorage.getItem('fin_v_final_v13') || '{}');
             let mTotal = 0;
 
             for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
@@ -282,15 +272,11 @@
 
                 if(record) {
                     const val = parseFloat(record.total);
-                    if (y === viewDate.getFullYear() && m === viewDate.getMonth()) {
-                        mTotal += val;
-                    }
+                    if (y === viewDate.getFullYear() && m === viewDate.getMonth()) mTotal += val;
                     const isPos = val >= 0;
                     cell.classList.add(isPos ? 'cell-profit' : 'cell-loss');
                     html += `<div class="day-val">${isPos?'+':''}${val}</div>`;
-                } else if(isToday) {
-                    cell.classList.add('cell-empty-today');
-                }
+                } else if(isToday) { cell.classList.add('cell-empty-today'); }
                 
                 cell.innerHTML = html;
                 grid.appendChild(cell);
@@ -301,23 +287,17 @@
         }
 
         function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); render(); }
-
         function exportCSV() {
-            const db = JSON.parse(localStorage.getItem('fin_v_final_v12') || '{}');
-            if(Object.keys(db).length === 0) return alert('暂无数据');
-            let csv = "\ufeff日期,支付宝收益,同花顺收益,总收益\n";
+            const db = JSON.parse(localStorage.getItem('fin_v_final_v13') || '{}');
+            if(Object.keys(db).length === 0) return alert('无数据');
+            let csv = "\ufeff日期,支付宝,同花顺,合计\n";
             Object.keys(db).sort().forEach(k => {
-                const r = db[k];
-                csv += `${k},${r.a},${r.t},${r.total}\n`;
+                const r = db[k]; csv += `${k},${r.a},${r.t},${r.total}\n`;
             });
             const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `理财导出_${viewDate.getMonth()+1}月.csv`;
-            a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `理财明细.csv`; a.click();
         }
-
-        function resetData() { if(confirm('清空记录？')) { localStorage.removeItem('fin_v_final_v12'); render(); } }
+        function resetData() { if(confirm('重置全部？')) { localStorage.removeItem('fin_v_final_v13'); render(); } }
     </script>
 </body>
 </html>
