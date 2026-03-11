@@ -2,6 +2,16 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+	<!-- 关联刚才创建的清单 -->
+	<link rel="manifest" href="manifest.json">
+	
+	<!-- iOS 专用配置：隐藏 Safari 地址栏和状态栏 -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-title" content="理财记录">
+	
+	<!-- App 桌面图标 (建议换成你自己的 180x180 png 图片) -->
+	<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
     <title>理财记录 Pro</title>
     <style>
@@ -95,7 +105,7 @@
                 <input type="date" id="targetDate" onchange="this.blur(); render();">
             </div>
             <div class="field-group">
-                <div class="label-icon"><span class="brand-tag tag-ali">支</span> 支付宝</div>
+                <div class="label-icon"><span class="brand-tag tag-ali">支</span> 支付宝1</div>
                 <div><button class="sign-btn" onclick="tSign('alipay')">±</button> <input type="number" id="alipay" placeholder="0.00" inputmode="decimal"></div>
             </div>
             <div class="field-group">
