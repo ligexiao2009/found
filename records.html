@@ -304,12 +304,31 @@
         }
 
         function impCSV(input) {
-            const r = new FileReader(); r.onload = (e) => {
-                const rows = e.target.result.split('\n'); let db = JSON.parse(localStorage.getItem(KEY)||'{}');
-                rows.slice(1).forEach(row => { const c = row.split(','); if(c.length >= 4) db[c.trim()] = { a:parseFloat(c), t:parseFloat(c), total:parseFloat(c).toFixed(2) }; });
-                localStorage.setItem(KEY, JSON.stringify(db)); render(); alert('导入成功');
-            }; r.readAsText(input.files[0]);
+            const r = new FileReader();
+            r.onload = (e) => {
+                const rows = e.target.result.split('\n');
+                let db = JSON.parse(localStorage.getItem(KEY) || '{}');
+        
+                rows.slice(1).forEach(row => {
+                    const c = row.split(',');
+                    // 确保行不为空且列数足够
+                    if (c.length >= 4 && c[0].trim()) {
+                        const id = c[0].trim(); 
+                        db[id] = {
+                            a: parseFloat(c[1]) || 0,
+                            t: parseFloat(c[2]) || 0,
+                            total: parseFloat(c[3]).toFixed(2)
+                        };
+                    }
+                });
+        
+                localStorage.setItem(KEY, JSON.stringify(db));
+                if (typeof render === 'function') render();
+                alert('导入成功');
+            };
+            if (input.files[0]) r.readAsText(input.files[0]);
         }
+
 
         function reset() { if(confirm('⚠️ 确定清空？')) { localStorage.removeItem(KEY); render(); } }
     </script>
