@@ -3,282 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>理财记录</title>
+    <title>理财记录 Pro</title>
     <style>
         :root {
             --bg-page: #F2F2F7;
             --card-white: #FFFFFF;
-            /* 盈亏色彩方案 */
+            /* 颜色规范：正红负绿 */
+            --profit-text: #D85D61; /* 红色-盈利 */
+            --loss-text: #1A634D;   /* 绿色-亏损 */
             --profit-bg: #FFDDE0;   
-            --profit-text: #D85D61; 
             --loss-bg: #C1E9DD;     
-            --loss-text: #1A634D;   
+            --dark-red: #FF453A;    /* 深色背景下的亮红 */
+            --dark-green: #32D74B;  /* 深色背景下的亮绿 */
             --ios-blue: #007AFF;
-            --ios-red: #FF3B30;
             --text-main: #1C1C1E;
             --text-sub: #8E8E93;
-            --ali-color: #1677FF;
-            --ths-color: #EE1B2D;
         }
 
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type="number"] { -moz-appearance: textfield; }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
             background-color: var(--bg-page);
             margin: 0;
             padding: calc(env(safe-area-inset-top) + 10px) 12px env(safe-area-inset-bottom);
             color: var(--text-main);
-            -webkit-user-select: none;
         }
 
-        .app-container { max-width: 450px; margin: 0 auto; position: relative; }
-        .card { background: var(--card-white); border-radius: 20px; padding: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 12px; }
-        .field-group { background: #F2F2F7; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
-        .label-with-icon { display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #3A3A3C; }
-        .brand-icon { width: 18px; height: 18px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 10px; margin-right: 6px; font-weight: bold; }
-        .icon-ali { background: var(--ali-color); }
-        .icon-ths { background: var(--ths-color); }
-        .input-wrap { display: flex; align-items: center; gap: 4px; }
-        #targetDate { color: var(--ios-blue); font-weight: 700; font-size: 15px; background: transparent; border: none; outline: none; width: 135px; text-align: right; }
-        .field-group input[type="number"] { border: none; background: transparent; font-size: 16px; font-weight: 600; color: var(--text-main); text-align: right; outline: none; width: 100px; }
-        .sign-toggle { background: #E5E5EA; color: var(--text-main); border: none; border-radius: 6px; padding: 4px 8px; font-size: 13px; font-weight: 700; }
-        .save-btn { width: 100%; background: var(--ios-blue); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; margin-top: 4px; }
-        .stat-panel { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; }
-        .month-info .value { font-size: 19px; font-weight: 900; }
+        .app-container { max-width: 450px; margin: 0 auto; }
+        .card { background: var(--card-white); border-radius: 16px; padding: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 10px; }
         
-        .action-btns { display: flex; gap: 8px; }
-        .mini-btn { background: #F2F2F7; color: var(--ios-blue); border: none; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        /* 录入区 */
+        .field-group { background: #F2F2F7; border-radius: 10px; padding: 8px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+        .label-icon { display: flex; align-items: center; font-size: 13px; font-weight: 600; color: #3A3A3C; }
+        .brand-tag { width: 18px; height: 18px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 10px; margin-right: 6px; font-weight: bold; }
+        .tag-ali { background: #1677FF; }
+        .tag-ths { background: #EE1B2D; }
+        input[type="date"] { color: var(--ios-blue); font-weight: 700; font-size: 14px; border: none; background: transparent; outline: none; }
+        input[type="number"] { border: none; background: transparent; font-size: 16px; font-weight: 700; text-align: right; width: 90px; outline: none; font-variant-numeric: tabular-nums; color: var(--text-main); }
+        .sign-btn { background: #E5E5EA; border: none; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
+        .save-btn { width: 100%; background: var(--ios-blue); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; margin-top: 4px; cursor: pointer; }
 
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .nav-btn { background: #F2F2F7; border: none; width: 32px; height: 32px; border-radius: 10px; font-size: 18px; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .weekday { font-size: 13px; color: var(--text-sub); text-align: center; padding-bottom: 10px; font-weight: 600; }
-        .day-cell { aspect-ratio: 1 / 1.1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s ease; }
-        .day-num { font-size: 17px; font-weight: 700; margin-bottom: 1px; }
-        .day-val { font-size: 10px; font-weight: 800; transform: scale(0.95); }
-        .cell-profit { background-color: var(--profit-bg) !important; color: var(--profit-text) !important; }
-        .cell-loss { background-color: var(--loss-bg) !important; color: var(--loss-text) !important; }
-        .is-today-text { color: var(--ios-blue); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
-        .cell-empty-today { border: 2px solid #E5E5EA; }
+        /* 统计条 - 极窄高度 */
+        .stat-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .stat-item { 
+            background: white; padding: 8px 12px; border-radius: 16px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); 
+            display: flex; flex-direction: column; justify-content: center;
+            height: 56px; /* 进一步压缩高度 */
+        }
+        .stat-item.dark { background: #1C1C1E; color: white; }
+        .stat-label { font-size: 10px; font-weight: 600; color: var(--text-sub); margin-bottom: 1px; letter-spacing: 0.3px; }
+        .stat-val { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
 
-        .detail-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
-        .detail-popup { background: white; width: 85%; max-width: 320px; border-radius: 24px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: popUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        @keyframes popUp { from { opacity: 0; transform: scale(0.8) translateY(15px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .pop-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; text-align: center; }
-        .pop-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F2F2F7; }
-        .pop-row .val { font-weight: 800; font-size: 16px; }
-        .pop-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
-        .pop-btn { padding: 12px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; }
-        .pop-del-btn { background: #FFF0F0; color: var(--ios-red); }
-        .pop-close { background: var(--bg-page); color: var(--ios-blue); }
+        /* 功能条 */
+        .tool-btns { display: flex; background: #E5E5EA; padding: 3px; border-radius: 10px; gap: 3px; margin-bottom: 12px; }
+        .btn-flex { 
+            flex: 1; background: transparent; border: none; padding: 7px; border-radius: 8px; 
+            font-size: 12px; font-weight: 700; color: var(--text-main); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+        }
 
-        .tool-bar { text-align: center; margin-top: 30px; font-size: 11px; color: var(--text-sub); opacity: 0.5; }
-        #csvFileInput { display: none; }
+        /* 日历 */
+        .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .cal-btn { background: #F2F2F7; border: none; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .week { font-size: 11px; color: var(--text-sub); text-align: center; font-weight: 600; padding-bottom: 5px; }
+        .cell { aspect-ratio: 1/1.05; border-radius: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.1s; }
+        .d-num { font-size: 15px; font-weight: 700; }
+        .d-val { font-size: 9px; font-weight: 800; transform: scale(0.85); margin-top: -1px; }
+        .cell-p { background: var(--profit-bg); color: var(--profit-text); }
+        .cell-l { background: var(--loss-bg); color: var(--loss-text); }
+        .is-today { color: var(--ios-blue); text-decoration: underline; text-underline-offset: 2px; }
+        .empty-today { border: 1.5px solid #D1D1D6; }
+
+        /* 弹窗 */
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px); z-index: 99; justify-content: center; align-items: center; }
+        .pop { background: white; width: 80%; max-width: 300px; border-radius: 24px; padding: 20px; animation: popIn 0.25s ease-out; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .pop-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F2F2F7; font-size: 14px; }
+        .pop-val { font-weight: 800; }
+        .p-btn { padding: 12px; border: none; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 15px; width: 48%; }
+
+        .footer { text-align: center; margin-top: 25px; font-size: 10px; color: var(--text-sub); opacity: 0.6; padding-bottom: 20px; }
+        #csvFile { display: none; }
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <!-- 录入面板 -->
         <div class="card">
             <div class="field-group">
-                <div class="label-with-icon">📅 记录日期</div>
-                <div class="input-wrap"><input type="date" id="targetDate" onchange="this.blur(); render();"></div>
+                <div class="label-icon">📅 记录日期</div>
+                <input type="date" id="targetDate" onchange="render()">
             </div>
             <div class="field-group">
-                <div class="label-with-icon"><span class="brand-icon icon-ali">支</span> 支付宝</div>
-                <div class="input-wrap"><button class="sign-toggle" onclick="toggleSign('alipay')">±</button><input type="number" id="alipay" placeholder="0.00" inputmode="decimal" step="any"></div>
+                <div class="label-icon"><span class="brand-tag tag-ali">支</span> 支付宝</div>
+                <div><button class="sign-btn" onclick="tSign('alipay')">±</button> <input type="number" id="alipay" placeholder="0.00" inputmode="decimal"></div>
             </div>
             <div class="field-group">
-                <div class="label-with-icon"><span class="brand-icon icon-ths">同</span> 同花顺</div>
-                <div class="input-wrap"><button class="sign-toggle" onclick="toggleSign('ths')">±</button><input type="number" id="ths" placeholder="0.00" inputmode="decimal" step="any"></div>
+                <div class="label-icon"><span class="brand-tag tag-ths">同</span> 同花顺</div>
+                <div><button class="sign-btn" onclick="tSign('ths')">±</button> <input type="number" id="ths" placeholder="0.00" inputmode="decimal"></div>
             </div>
-            <button class="save-btn" onclick="saveRecord()">保存收益数据</button>
+            <button class="save-btn" onclick="save()">保存收益数据</button>
         </div>
 
-        <!-- 汇总统计 -->
-        <div class="card stat-panel">
-            <div class="month-info" style="display:flex; align-items:baseline; gap:6px;">
-                <span style="font-size:11px; color:var(--text-sub)" id="monthLabel">累计收益</span>
-                <span class="value" id="monthTotal">¥ 0.00</span>
+        <!-- 统计面板 (极窄版) -->
+        <div class="stat-bar">
+            <div class="stat-item">
+                <span class="stat-label" id="mLabel">--月累计</span>
+                <div class="stat-val" id="mTotal">¥ 0.00</div>
             </div>
-            <div class="action-btns">
-                <input type="file" id="csvFileInput" accept=".csv" onchange="handleImport(this)">
-                <button class="mini-btn" onclick="document.getElementById('csvFileInput').click()">📥 导入</button>
-                <button class="mini-btn" onclick="exportCSV()">📤 导出</button>
+            <div class="stat-item dark">
+                <span class="stat-label" id="yLabel">--年度收益</span>
+                <div class="stat-val" id="yTotal">¥ 0.00</div>
             </div>
+        </div>
+
+        <!-- 导入导出 -->
+        <div class="tool-btns">
+            <input type="file" id="csvFile" accept=".csv" onchange="impCSV(this)">
+            <button class="btn-flex" onclick="document.getElementById('csvFile').click()">📥 导入数据</button>
+            <div style="width:1px; background: rgba(0,0,0,0.1); margin: 6px 0;"></div>
+            <button class="btn-flex" onclick="expCSV()">📤 导出 CSV</button>
         </div>
 
         <!-- 日历面板 -->
-        <div class="card calendar-card">
-            <div class="cal-header">
-                <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
-                <div class="cal-title" id="monthTitle">--</div>
-                <button class="nav-btn" onclick="changeMonth(1)">›</button>
+        <div class="card">
+            <div class="cal-head">
+                <button class="cal-btn" onclick="moveMonth(-1)">‹</button>
+                <div id="mTitle" style="font-weight: 800; font-size: 15px;">--</div>
+                <button class="cal-btn" onclick="moveMonth(1)">›</button>
             </div>
-            <div class="calendar-grid" id="calendarGrid">
-                <div class="weekday">日</div><div class="weekday">一</div><div class="weekday">二</div>
-                <div class="weekday">三</div><div class="weekday">四</div><div class="weekday">五</div><div class="weekday">六</div>
+            <div class="grid" id="calGrid">
+                <div class="week">日</div><div class="week">一</div><div class="week">二</div><div class="week">三</div><div class="week">四</div><div class="week">五</div><div class="week">六</div>
             </div>
         </div>
 
-        <div class="tool-bar"><span onclick="resetData()">🔄 重置全部数据</span></div>
+        <div class="footer"><span onclick="reset()" style="cursor:pointer">🔄 重置本地全部数据</span></div>
     </div>
 
-    <!-- 弹窗 -->
-    <div id="detailOverlay" class="detail-overlay" onclick="closePop()">
-        <div class="detail-popup" onclick="event.stopPropagation()">
-            <div class="pop-title"><span id="popDate">--</span> 收益明细</div>
-            <div class="pop-row"><span>支付宝</span><span id="popAli" class="val">0.00</span></div>
-            <div class="pop-row"><span>同花顺</span><span id="popThs" class="val">0.00</span></div>
-            <div class="pop-row" style="border-bottom:none; margin-top:10px; padding-top:10px;">
-                <span style="color:var(--text-main)">当日总计</span><span id="popTotal" class="val" style="font-size:22px;">0.00</span>
-            </div>
-            <div class="pop-btn-group">
-                <button class="pop-btn pop-del-btn" id="delBtn">删除记录</button>
-                <button class="pop-btn pop-close" onclick="closePop()">完成</button>
+    <!-- 明细弹窗 -->
+    <div id="popOverlay" class="overlay" onclick="closePop()">
+        <div class="pop" onclick="event.stopPropagation()">
+            <div id="pDate" style="text-align:center; font-weight:800; margin-bottom:15px;">--</div>
+            <div class="pop-row"><span>支付宝</span><span id="pAli" class="pop-val">0.00</span></div>
+            <div class="pop-row"><span>同花顺</span><span id="pThs" class="pop-val">0.00</span></div>
+            <div class="pop-row" style="border:none"><span>当日合计</span><span id="pAll" class="pop-val" style="font-size:20px">0.00</span></div>
+            <div style="display:flex; justify-content:space-between">
+                <button class="p-btn" style="background:#FFF0F0; color:#FF3B30" id="delB">删除记录</button>
+                <button class="p-btn" style="background:#F2F2F7; color:#007AFF" onclick="closePop()">关闭</button>
             </div>
         </div>
     </div>
 
     <script>
-        let viewDate = new Date();
-        const DB_KEY = 'fin_v_final_v24';
+        let vDate = new Date();
+        const KEY = 'fin_v_final_v24';
 
-        function setToday() {
+        window.onload = () => { 
             const now = new Date();
-            document.getElementById('targetDate').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            document.getElementById('targetDate').value = now.toISOString().split('T')[0];
+            render(); 
+        };
+
+        function tSign(id) {
+            const e = document.getElementById(id);
+            if(e.value && e.value !== "0") e.value = (parseFloat(e.value) * -1).toString();
         }
 
-        function toggleSign(id) {
-            const el = document.getElementById(id);
-            if (!el.value || el.value === "0") return;
-            el.value = (parseFloat(el.value) * -1).toString();
-        }
-
-        window.onload = () => { setToday(); render(); };
-
-        function saveRecord() {
+        function save() {
             const v1 = parseFloat(document.getElementById('alipay').value) || 0;
             const v2 = parseFloat(document.getElementById('ths').value) || 0;
-            const dateStr = document.getElementById('targetDate').value; 
-            if (!dateStr) return;
-            let db = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
-            db[dateStr] = { a: v1, t: v2, total: (v1 + v2).toFixed(2) };
-            localStorage.setItem(DB_KEY, JSON.stringify(db));
-            document.getElementById('alipay').value = ''; 
-            document.getElementById('ths').value = '';
+            const d = document.getElementById('targetDate').value;
+            if(!d) return alert("请选择日期");
+            let db = JSON.parse(localStorage.getItem(KEY) || '{}');
+            db[d] = { a: v1, t: v2, total: (v1 + v2).toFixed(2) };
+            localStorage.setItem(KEY, JSON.stringify(db));
+            document.getElementById('alipay').value = ''; document.getElementById('ths').value = '';
             render();
         }
 
-        function handleImport(input) {
+        function render() {
+            const grid = document.getElementById('calGrid');
+            const weeks = grid.querySelectorAll('.week');
+            grid.innerHTML = ''; weeks.forEach(w => grid.appendChild(w));
+
+            const y = vDate.getFullYear(), m = vDate.getMonth();
+            document.getElementById('mTitle').innerText = `${y}年 ${m + 1}月`;
+            document.getElementById('mLabel').innerText = `${m + 1}月累计`;
+            document.getElementById('yLabel').innerText = `${y}年度收益`;
+
+            const db = JSON.parse(localStorage.getItem(KEY) || '{}');
+            let mT = 0, yT = 0;
+            Object.keys(db).forEach(k => {
+                const val = parseFloat(db[k].total);
+                if(k.startsWith(`${y}-`)) {
+                    yT += val;
+                    if(k.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)) mT += val;
+                }
+            });
+
+            const first = new Date(y, m, 1).getDay();
+            const totalD = new Date(y, m + 1, 0).getDate();
+            for(let i=0; i<first; i++) grid.appendChild(document.createElement('div'));
+
+            const today = new Date().toISOString().split('T')[0];
+            for(let d=1; d<=totalD; d++) {
+                const ds = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const r = db[ds], c = document.createElement('div');
+                c.className = 'cell';
+                let isT = (ds === today), html = `<div class="d-num ${isT?'is-today':''}">${isT?'今':d}</div>`;
+                if(r) {
+                    const v = parseFloat(r.total);
+                    c.classList.add(v >= 0 ? 'cell-p' : 'cell-l');
+                    html += `<div class="d-val">${v>=0?'+':''}${Math.round(v)}</div>`;
+                    c.onclick = () => showPop(ds);
+                } else {
+                    if(isT) c.classList.add('empty-today');
+                    c.onclick = () => { document.getElementById('targetDate').value = ds; };
+                }
+                c.innerHTML = html; grid.appendChild(c);
+            }
+
+            // 更新统计数值颜色：正红负绿
+            const upUI = (id, v, dark) => {
+                const e = document.getElementById(id);
+                e.innerText = `¥ ${v.toLocaleString(undefined,{minimumFractionDigits:2})}`;
+                if (v >= 0) {
+                    // 正数显示红色
+                    e.style.color = dark ? 'var(--dark-red)' : 'var(--profit-text)';
+                } else {
+                    // 负数显示绿色
+                    e.style.color = dark ? 'var(--dark-green)' : 'var(--loss-text)';
+                }
+            };
+            upUI('mTotal', mT, false); 
+            upUI('yTotal', yT, true);
+        }
+
+        function showPop(d) {
+            const db = JSON.parse(localStorage.getItem(KEY) || '{}'), r = db[d];
+            if(!r) return;
+            document.getElementById('pDate').innerText = d.replace(/-/g, '/');
+            const f = (id, v) => {
+                const e = document.getElementById(id);
+                e.innerText = (v>=0?'+':'') + parseFloat(v).toFixed(2);
+                e.style.color = v>=0 ? 'var(--profit-text)' : 'var(--loss-text)';
+            };
+            f('pAli', r.a); f('pThs', r.t); f('pAll', r.total);
+            document.getElementById('delB').onclick = () => {
+                if(confirm('确定删除该笔记录吗？')) { delete db[d]; localStorage.setItem(KEY, JSON.stringify(db)); closePop(); render(); }
+            };
+            document.getElementById('popOverlay').style.display = 'flex';
+        }
+
+        function closePop() { document.getElementById('popOverlay').style.display = 'none'; }
+        function moveMonth(s) { vDate.setMonth(vDate.getMonth() + s); render(); }
+
+        function expCSV() {
+            const db = JSON.parse(localStorage.getItem(KEY) || '{}'), keys = Object.keys(db).sort();
+            if(!keys.length) return alert("暂无数据可导出");
+            let c = "\ufeff日期,支付宝,同花顺,合计\n";
+            keys.forEach(k => c += `${k},${db[k].a},${db[k].t},${db[k].total}\n`);
+            const blob = new Blob([c], {type:'text/csv;charset=utf-8;'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `理财导出_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+        }
+
+        function impCSV(input) {
             const file = input.files[0];
-            if (!file) return;
+            if(!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const rows = text.split('\n');
-                let db = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+            reader.onload = (e) => {
+                const rows = e.target.result.split('\n');
+                let db = JSON.parse(localStorage.getItem(KEY) || '{}');
                 let count = 0;
-                for (let i = 1; i < rows.length; i++) {
-                    const cols = rows[i].split(',');
-                    if (cols.length >= 4) {
-                        const date = cols[0].trim().replace(/\//g, '-');
-                        const ali = parseFloat(cols[1]) || 0;
-                        const ths = parseFloat(cols[2]) || 0;
-                        const total = parseFloat(cols[3]) || (ali + ths);
-                        if (date.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
-                            db[date] = { a: ali, t: ths, total: total.toFixed(2) };
+                rows.slice(1).forEach(row => {
+                    const cols = row.split(',');
+                    if(cols.length >= 4) {
+                        let d = cols[0].trim().replace(/\//g, '-');
+                        if(d.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
+                            db[d] = { a:parseFloat(cols[1])||0, t:parseFloat(cols[2])||0, total:parseFloat(cols[3])||(parseFloat(cols[1])+parseFloat(cols[2])).toFixed(2) };
                             count++;
                         }
                     }
-                }
-                localStorage.setItem(DB_KEY, JSON.stringify(db));
-                alert(`成功导入 ${count} 条记录！`);
-                render();
+                });
+                localStorage.setItem(KEY, JSON.stringify(db)); render(); alert(`成功导入 ${count} 条记录`);
                 input.value = '';
             };
             reader.readAsText(file);
         }
 
-        function showPop(dateStr) {
-            const db = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
-            const record = db[dateStr];
-            if (!record) return;
-            const [y, m, d] = dateStr.split('-');
-            document.getElementById('popDate').innerText = `${m}月${d}日`;
-            const fmt = (id, val) => {
-                const el = document.getElementById(id);
-                el.innerText = (val >= 0 ? '+' : '') + parseFloat(val).toFixed(2);
-                el.style.color = val >= 0 ? 'var(--profit-text)' : 'var(--loss-text)';
-            };
-            fmt('popAli', record.a); fmt('popThs', record.t); fmt('popTotal', record.total);
-            document.getElementById('delBtn').onclick = () => {
-                if(confirm('确定删除该笔记录吗？')) { delete db[dateStr]; localStorage.setItem(DB_KEY, JSON.stringify(db)); closePop(); render(); }
-            };
-            document.getElementById('detailOverlay').style.display = 'flex';
-        }
-
-        function closePop() { document.getElementById('detailOverlay').style.display = 'none'; }
-
-        function render() {
-            const grid = document.getElementById('calendarGrid');
-            const weekdays = grid.querySelectorAll('.weekday');
-            grid.innerHTML = ''; weekdays.forEach(w => grid.appendChild(w));
-            const y = viewDate.getFullYear(); const m = viewDate.getMonth();
-            document.getElementById('monthTitle').innerText = `${y}年 ${m + 1}月`;
-            document.getElementById('monthLabel').innerText = `${m + 1}月累计`;
-            const firstDay = new Date(y, m, 1).getDay(); const daysInMonth = new Date(y, m + 1, 0).getDate();
-            const db = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
-            let mTotal = 0;
-            for(let i=0; i<firstDay; i++) grid.appendChild(document.createElement('div'));
-            const now = new Date();
-            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            for(let d=1; d<=daysInMonth; d++) {
-                const dayStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const record = db[dayStr]; const cell = document.createElement('div');
-                cell.className = 'day-cell'; cell.onclick = () => showPop(dayStr);
-                let isToday = (dayStr === todayStr);
-                let html = `<div class="day-num ${isToday ? 'is-today-text' : ''}">${isToday ? '今' : d}</div>`;
-                if(record) {
-                    const val = parseFloat(record.total);
-                    if (y === viewDate.getFullYear() && m === viewDate.getMonth()) mTotal += val;
-                    cell.classList.add(val >= 0 ? 'cell-profit' : 'cell-loss');
-                    html += `<div class="day-val">${val >= 0 ? '+' : ''}${Math.round(val)}</div>`;
-                } else if(isToday) { cell.classList.add('cell-empty-today'); }
-                cell.innerHTML = html; grid.appendChild(cell);
-            }
-            const totalEl = document.getElementById('monthTotal');
-            totalEl.innerText = `¥ ${mTotal.toFixed(2)}`;
-            totalEl.style.color = mTotal >= 0 ? 'var(--profit-text)' : 'var(--loss-text)';
-        }
-
-        function changeMonth(s) { viewDate.setMonth(viewDate.getMonth() + s); render(); }
-
-        // 修改点：文件名增加动态年月日
-        function exportCSV() {
-            const db = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
-            if(Object.keys(db).length === 0) return alert('当前没有可导出的数据');
-            
-            let csv = "\ufeff日期,支付宝,同花顺,合计\n";
-            Object.keys(db).sort().forEach(k => { 
-                const r = db[k]; 
-                csv += `${k},${r.a},${r.t},${r.total}\n`; 
-            });
-
-            // 获取当前日期用于文件名
-            const now = new Date();
-            const fileNameDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-            const a = document.createElement('a'); 
-            a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'})); 
-            a.download = `理财明细_${fileNameDate}.csv`; 
-            a.click();
-        }
-
-        function resetData() { if(confirm('警告：此操作将永久清空所有记录！')) { localStorage.removeItem(DB_KEY); render(); } }
+        function reset() { if(confirm('警告：将永久清空所有理财记录！')) { localStorage.removeItem(KEY); render(); } }
     </script>
 </body>
 </html>
