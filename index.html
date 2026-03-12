@@ -195,18 +195,33 @@
     </div>
 
     <script>
+        // 立即设置主题，避免闪烁
+        (function() {
+            const savedTheme = localStorage.getItem('app_theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                document.body.setAttribute('data-theme', savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.body.setAttribute('data-theme', 'dark');
+            }
+        })();
+
         function toggleTheme() {
             const body = document.body;
-            const currentTheme = body.getAttribute('data-theme');
+            const currentTheme = body.getAttribute('data-theme') || 'light';
             const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
             body.setAttribute('data-theme', nextTheme);
+            document.documentElement.setAttribute('data-theme', nextTheme);
             document.getElementById('modeBtn').innerText = nextTheme === 'light' ? '🌗' : '☀️';
+            localStorage.setItem('app_theme', nextTheme);
         }
 
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.setAttribute('data-theme', 'dark');
-            document.getElementById('modeBtn').innerText = '☀️';
-        }
+        // 初始化按钮图标
+        (function() {
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            document.getElementById('modeBtn').innerText = currentTheme === 'light' ? '🌗' : '☀️';
+        })();
 		
 		async function go(url){
 		

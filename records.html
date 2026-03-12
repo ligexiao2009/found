@@ -21,7 +21,14 @@
             --profit-bg: #FFF2F2; --loss-bg: #F2F9F2;
             --dark-profit: #FF6B6B; --dark-loss: #6BCB77;
             --ios-blue: #007AFF; --text-main: #000000; --text-sub: #8E8E93;
-            --btn-gray: #F5F5F7; 
+            --btn-gray: #F5F5F7;
+        }
+        [data-theme='dark'] {
+            --bg-page: #000000; --card-white: #1C1C1E;
+            --profit-text: #FF6B6B; --loss-text: #6BCB77;
+            --profit-bg: #3D1F1F; --loss-bg: #1F3D23;
+            --ios-blue: #0A84FF; --text-main: #FFFFFF; --text-sub: #8E8E93;
+            --btn-gray: #2C2C2E;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -29,6 +36,7 @@
             background-color: var(--bg-page); margin: 0;
             padding: calc(env(safe-area-inset-top) + 12px) 16px env(safe-area-inset-bottom);
             color: var(--text-main); letter-spacing: -0.3px;
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .app-container { max-width: 420px; margin: 0 auto; }
         .card { 
@@ -47,11 +55,13 @@
 
         /* 统计面板 */
         .stat-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        .stat-item { 
-            background: white; padding: 12px 14px; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; 
+        .stat-item {
+            background: var(--card-white); padding: 12px 14px; border-radius: 20px; display: flex; flex-direction: column; justify-content: center;
             height: 68px; border: 0.5px solid rgba(0,0,0,0.05);
         }
+        [data-theme='dark'] .stat-item { border-color: rgba(255,255,255,0.05); }
         .stat-item.dark { background: #1C1C1E; color: white; cursor: pointer; border: none; }
+        [data-theme='dark'] .stat-item.dark { background: #2C2C2E; }
         .stat-label { font-size: 11px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; }
         .stat-val { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; }
 
@@ -87,8 +97,9 @@
         .week { font-size: 12px; color: var(--text-sub); text-align: center; font-weight: 600; padding-bottom: 8px; }
         .cell { border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.15s; border: 0.5px solid rgba(0,0,0,0.03); }
         .cell-day { aspect-ratio: 1/1.15; background: #F9F9F9; }
+        [data-theme='dark'] .cell-day { background: #2C2C2E; }
         .cell-month { height: 64px; }
-        .cell-selected { border: 2.5px solid var(--ios-blue) !important; background: white !important; z-index: 2; box-shadow: 0 4px 12px rgba(0,122,255,0.15); }
+        .cell-selected { border: 2.5px solid var(--ios-blue) !important; background: var(--card-white) !important; z-index: 2; box-shadow: 0 4px 12px rgba(0,122,255,0.15); }
         .cell-p { background: var(--profit-bg) !important; color: var(--profit-text); border: none; }
         .cell-l { background: var(--loss-bg) !important; color: var(--loss-text); border: none; }
         .d-num { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
@@ -96,11 +107,36 @@
         .is-today { color: var(--ios-blue); font-weight: 800; }
 
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); z-index: 100; justify-content: center; align-items: center; }
-        .pop { background: white; width: 88%; max-width: 340px; border-radius: 30px; padding: 28px; }
+        .pop { background: var(--card-white); width: 88%; max-width: 340px; border-radius: 30px; padding: 28px; }
         .pop-row { display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 0.5px solid #F2F2F7; font-size: 16px; }
         .footer { text-align: center; margin-top: 40px; font-size: 12px; color: var(--text-sub); padding-bottom: 40px; }
         #csvFile { display: none; }
+        .pop-row-edit input {
+            width: 120px;
+            text-align: right;
+            background: var(--btn-gray);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 16px;
+            font-weight: 700;
+            outline: none;
+            color: var(--text-main);
+        }
     </style>
+    <script>
+        // 立即执行，避免主题闪烁
+        (function() {
+            const savedTheme = localStorage.getItem('app_theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
 </head>
 <body>
     <div class="app-container">
@@ -179,11 +215,19 @@
         let vDate = new Date(), viewMode = 'day', yearPrivate = false, accountMode = 'all';
         const KEY = 'fin_v_final_v24';
 
-        window.onload = () => { 
+        // 立即初始化日期，不等待 window.onload
+        (function initDate() {
             const todayStr = new Date().toLocaleDateString('en-CA');
-            document.getElementById('targetDate').value = todayStr;
-            render(); 
-        };
+            const targetDateEl = document.getElementById('targetDate');
+            if (targetDateEl) {
+                targetDateEl.value = todayStr;
+            }
+        })();
+
+        // 等 DOM 准备好就渲染
+        document.addEventListener('DOMContentLoaded', function() {
+            render();
+        });
 
         function togglePrivacy() { yearPrivate = !yearPrivate; render(); }
         function closePop() { document.getElementById('popOverlay').style.display='none'; }
