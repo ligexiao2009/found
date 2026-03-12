@@ -70,6 +70,12 @@
         .sw-btn { border: none; background: transparent; padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 9px; cursor: pointer; color: #636366; }
         .sw-btn.active { background: white; color: var(--text-main); box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
 
+        /* 账户切换器 */
+        .account-switcher { display: flex; gap: 12px; }
+        .ac-btn { flex: 1; background: var(--btn-gray); border: 0.5px solid rgba(0,0,0,0.08); padding: 12px; border-radius: 16px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-main); }
+        .ac-btn:active { opacity: 0.7; }
+        .ac-btn.active { background: var(--ios-blue); color: white; border: none; }
+
         .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .v-title { font-weight: 800; font-size: 17px; }
         .cal-btn { background: #F2F2F7; border: none; width: 34px; height: 34px; border-radius: 12px; cursor: pointer; color: var(--ios-blue); display: flex; align-items: center; justify-content: center; }
@@ -139,6 +145,12 @@
             </div>
             <div id="mainGrid" class="grid grid-day"></div>
         </div>
+		<!-- 账户切换器 -->
+		<div class="account-switcher" style="margin-bottom: 12px;">
+		    <button class="ac-btn active" id="ac-all" onclick="switchAccount('all')">全部</button>
+		    <button class="ac-btn" id="ac-alipay" onclick="switchAccount('alipay')">支付宝</button>
+		    <button class="ac-btn" id="ac-ths" onclick="switchAccount('ths')">同花顺</button>
+		</div>
 		<!-- 功能按钮组 - 带有边框和间隙 -->
 		<div class="tool-btns">
 		    <input type="file" id="csvFile" onchange="impCSV(this)">
@@ -164,7 +176,7 @@
     </div>
 
     <script>
-        let vDate = new Date(), viewMode = 'day', yearPrivate = false;
+        let vDate = new Date(), viewMode = 'day', yearPrivate = false, accountMode = 'all';
         const KEY = 'fin_v_final_v24';
 
         window.onload = () => { 
@@ -181,6 +193,19 @@
             document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('sw-' + mode).classList.add('active');
             render();
+        }
+
+        function switchAccount(mode) {
+            accountMode = mode;
+            document.querySelectorAll('.ac-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('ac-' + mode).classList.add('active');
+            render();
+        }
+
+        function getValue(r) {
+            if (accountMode === 'alipay') return r.a;
+            if (accountMode === 'ths') return r.t;
+            return parseFloat(r.total);
         }
 
         function tSign(id) { const e = document.getElementById(id); if(e.value && e.value !== "0") e.value = (parseFloat(e.value)*-1).toString(); }
@@ -210,7 +235,7 @@
 
             let mT = 0, yT = 0;
             Object.keys(db).forEach(k => {
-                const val = parseFloat(db[k].total);
+                const val = getValue(db[k]);
                 if(k.startsWith(curY + '-')) {
                     yT += val;
                     const monthKey = `${curY}-${String(curM+1).padStart(2,'0')}`;
@@ -218,8 +243,12 @@
                 }
             });
 
-            document.getElementById('mLabel').innerText = (curM+1)+'月累计';
-            document.getElementById('yLabel').innerText = curY+'年度收益';
+            let accountSuffix = '';
+            if (accountMode === 'alipay') accountSuffix = '（支付宝）';
+            else if (accountMode === 'ths') accountSuffix = '（同花顺）';
+
+            document.getElementById('mLabel').innerText = (curM+1)+'月累计' + accountSuffix;
+            document.getElementById('yLabel').innerText = curY+'年度收益' + accountSuffix;
             const f = (v) => v.toLocaleString(undefined,{minimumFractionDigits:2});
             const mValEl = document.getElementById('mTotal');
             mValEl.innerText = '¥ ' + f(mT);
@@ -239,24 +268,24 @@
                 const d = document.createElement('div'); d.className = 'week'; d.innerText = w; grid.appendChild(d);
             });
             document.getElementById('vTitle').innerText = `${y}年 ${m+1}月`;
-            const firstDayOfMonth = new Date(y, m, 1).getDay(); 
+            const firstDayOfMonth = new Date(y, m, 1).getDay();
             const totalDays = new Date(y, m + 1, 0).getDate();
             const todayStr = new Date().toLocaleDateString('en-CA');
-            let offset = firstDayOfMonth === 0 ? 0 : firstDayOfMonth - 1; 
-            if(firstDayOfMonth === 6 || firstDayOfMonth === 0) offset = 0; 
+            let offset = firstDayOfMonth === 0 ? 0 : firstDayOfMonth - 1;
+            if(firstDayOfMonth === 6 || firstDayOfMonth === 0) offset = 0;
             for(let i=0; i<offset && offset < 5; i++) grid.appendChild(document.createElement('div'));
             for(let d=1; d<=totalDays; d++) {
                 const dateObj = new Date(y, m, d);
                 const dayOfWeek = dateObj.getDay();
-                if(dayOfWeek === 0 || dayOfWeek === 6) continue; 
+                if(dayOfWeek === 0 || dayOfWeek === 6) continue;
                 const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const r = db[ds], cell = document.createElement('div'); 
+                const r = db[ds], cell = document.createElement('div');
                 cell.className = 'cell cell-day';
                 if (ds === selectedDate) cell.classList.add('cell-selected');
                 let isT = (ds === todayStr);
                 cell.innerHTML = `<div class="d-num ${isT?'is-today':''}">${d}</div>`;
                 if(r) {
-                    const v = parseFloat(r.total); cell.classList.add(v>=0?'cell-p':'cell-l');
+                    const v = getValue(r); cell.classList.add(v>=0?'cell-p':'cell-l');
                     cell.innerHTML += `<div class="d-val">${v>=0?'+':''}${Math.round(v)}</div>`;
                     cell.onclick = () => ds === selectedDate ? showPop(ds, r) : (document.getElementById('targetDate').value = ds, render());
                 } else {
@@ -272,7 +301,7 @@
             for(let i=1; i<=12; i++) {
                 let mSum = 0, has = false;
                 const mPrefix = `${y}-${String(i).padStart(2,'0')}`;
-                Object.keys(db).forEach(k => { if(k.startsWith(mPrefix)) { mSum += parseFloat(db[k].total); has = true; } });
+                Object.keys(db).forEach(k => { if(k.startsWith(mPrefix)) { mSum += getValue(db[k]); has = true; } });
                 const cell = document.createElement('div'); cell.className = 'cell cell-month';
                 if(has) { cell.classList.add(mSum>=0?'cell-p':'cell-l'); cell.innerHTML = `<div class="d-num" style="font-size:15px">${i}月</div><div class="d-val">${(mSum>=0?'+':'')+Math.round(mSum)}</div>`; }
                 else { cell.innerHTML = `<div class="d-num" style="font-size:15px; color:#D1D1D6">${i}月</div><div class="d-val" style="color:#D1D1D6">0</div>`; }
@@ -286,7 +315,7 @@
             document.getElementById('vTitle').innerText = `年度对比`;
             for(let i = y - 2; i <= y + 3; i++) {
                 let ySum = 0, has = false;
-                Object.keys(db).forEach(k => { if(k.startsWith(i + '-')) { ySum += parseFloat(db[k].total); has = true; } });
+                Object.keys(db).forEach(k => { if(k.startsWith(i + '-')) { ySum += getValue(db[k]); has = true; } });
                 const cell = document.createElement('div'); cell.className = 'cell cell-month';
                 if(has) { cell.classList.add(ySum>=0?'cell-p':'cell-l'); cell.innerHTML = `<div class="d-num" style="font-size:15px">${i}</div><div class="d-val">${(ySum>=0?'+':'')+Math.round(ySum)}</div>`; }
                 else { cell.innerHTML = `<div class="d-num" style="font-size:15px; color:#D1D1D6">${i}</div><div class="d-val" style="color:#D1D1D6">0</div>`; }
@@ -299,6 +328,15 @@
             document.getElementById('pDate').innerText = d.replace(/-/g, ' / ');
             const set = (id, v) => { const e = document.getElementById(id); e.innerText = (v>=0?'+':'')+parseFloat(v).toFixed(2); e.style.color = v>=0?'var(--profit-text)':'var(--loss-text)'; };
             set('pAli', r.a); set('pThs', r.t); set('pAll', r.total);
+
+            // 根据当前账户模式高亮显示对应的行
+            document.querySelectorAll('.pop-row').forEach(row => row.style.opacity = '1');
+            if (accountMode === 'alipay') {
+                document.querySelectorAll('.pop-row')[1].style.opacity = '0.3';
+            } else if (accountMode === 'ths') {
+                document.querySelectorAll('.pop-row')[0].style.opacity = '0.3';
+            }
+
             document.getElementById('delB').onclick = () => { if(confirm('确定删除？')) { let db = JSON.parse(localStorage.getItem(KEY)); delete db[d]; localStorage.setItem(KEY, JSON.stringify(db)); closePop(); render(); } };
             document.getElementById('popOverlay').style.display = 'flex';
         }
