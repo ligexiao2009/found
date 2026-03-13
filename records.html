@@ -846,7 +846,8 @@
             keys.forEach(k => csv += `${k},${db[k].a},${db[k].t},${db[k].total}\n`);
             const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `理财导出_${new Date().toISOString().split('T')}.csv`; a.click();
+            const today = new Date().toLocaleDateString('en-CA');
+            a.download = `理财导出_${today}.csv`; a.click();
         }
 
         function impCSV(input) {
