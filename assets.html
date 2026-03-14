@@ -246,14 +246,16 @@
     function render() {
         let h = JSON.parse(localStorage.getItem('v_all_fn_hist') || "[]");
         histList.innerHTML = h.map((r, i) => {
+            const amount = r.amount != null ? Number(r.amount) : 0;
             let diffHtml = "";
             if (i < h.length - 1) {
-                const d = r.amount - h[i+1].amount;
+                const nextAmount = h[i+1].amount != null ? Number(h[i+1].amount) : 0;
+                const d = amount - nextAmount;
                 diffHtml = `<span class="diff-tag ${d>=0?'diff-up':'diff-down'}">${d>=0?'+':'-'}${Math.abs(d).toLocaleString()}</span>`;
             } else { diffHtml = `<span class="diff-tag" style="background:#eee;color:#999">START</span>`; }
             return `<div class="history-item">
                 <div class="hist-info-left ${isPrivate?'blur-text':''}">
-                    <div class="hist-amount">¥${r.amount.toLocaleString()}</div>
+                    <div class="hist-amount">¥${amount.toLocaleString()}</div>
                     ${diffHtml}
                 </div>
                 <div class="hist-time-center">${r.time}</div>
@@ -268,15 +270,15 @@
         if (h.length < 2) { box.style.display='none'; return; }
         box.style.display='block';
         const data = [...h].reverse().slice(-10);
-        const vals = data.map(r => r.amount);
+        const vals = data.map(r => r.amount != null ? Number(r.amount) : 0);
         const w = document.getElementById('svg-chart').clientWidth, ht = 120;
         let max = Math.max(...vals), min = Math.min(...vals);
         let pad = (max - min) * 0.2 || 1000;
         max += pad; min -= pad;
         document.getElementById('y-max').textContent = (max/10000).toFixed(1)+'w';
         document.getElementById('y-min').textContent = (min/10000).toFixed(1)+'w';
-        document.getElementById('x-start').textContent = data.day;
-        document.getElementById('x-end').textContent = data[data.length-1].day;
+        document.getElementById('x-start').textContent = data[0] ? data[0].day : '';
+        document.getElementById('x-end').textContent = data[data.length-1] ? data[data.length-1].day : '';
         const pts = vals.map((v, i) => {
             const x = (i/(vals.length-1)) * w;
             const y = ht - ((v-min)/(max-min)) * ht;
@@ -293,10 +295,72 @@
         let h = JSON.parse(localStorage.getItem('v_all_fn_hist') || "[]");
         if (!h.length) return;
         let csv = "\uFEFF时间,总计," + ASSET_KEYS.join(",") + "\n";
-        csv += h.map(r => [r.time, r.amount, ...ASSET_KEYS.map(k => (r.detail?r.detail[k]:0))].join(",")).join("\n");
+        csv += [...h].reverse().map(r => [r.time, r.amount, ...ASSET_KEYS.map(k => (r.detail?r.detail[k]:""))].join(",")).join("\n");
         const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = `财富备份.csv`; a.click();
     }
-    
+
+    function importData(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let csv = e.target.result;
+                csv = csv.replace(/^\uFEFF/, '');
+                const lines = csv.split("\n").filter(line => line.trim());
+                if (lines.length < 2) return;
+                const history = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(",");
+                    if (values.length < 2) continue;
+                    const detail = {};
+                    ASSET_KEYS.forEach((k, idx) => {
+                        const val = values[2 + idx];
+                        detail[k] = (val && val.trim() !== "" && val !== "0") ? val.trim() : "";
+                    });
+                    const amountStr = (values[1] || "").replace(/,/g, "");
+                    const amount = parseFloat(amountStr) || 0;
+                    let day = "导入";
+                    if (values[0] && values[0].includes(" ")) {
+                        const datePart = values[0].split(" ")[0];
+                        if (datePart.includes("/")) {
+                            const parts = datePart.split("/");
+                            day = parts[parts.length - 2] + "-" + parts[parts.length - 1];
+                        }
+                    }
+                    history.push({
+                        time: values[0],
+                        amount: amount,
+                        day: day,
+                        detail: detail
+                    });
+                }
+                if (history.length) {
+                    history.reverse();
+                    localStorage.setItem('v_all_fn_hist', JSON.stringify(history));
+                    const latest = history[0];
+                    if (latest.detail) {
+                        ASSET_KEYS.forEach(k => {
+                            if (latest.detail[k]) {
+                                document.getElementById(k).value = latest.detail[k];
+                                localStorage.setItem('v_all_fn_' + k, latest.detail[k]);
+                            }
+                        });
+                    }
+                    update(false);
+                    render();
+                    alert("导入成功！共导入 " + history.length + " 条记录。");
+                }
+                input.value = "";
+            } catch(err) {
+                console.error(err);
+                alert("导入失败");
+                input.value = "";
+            }
+        };
+        reader.readAsText(file);
+    }
+
     inputs.forEach(i => i.addEventListener('input', (e) => {
         let v = e.target.value.replace(/[^\d.]/g, "").replace(/\.(?=.*\.)/g, "");
         e.target.value = v;
