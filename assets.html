@@ -20,7 +20,6 @@
             min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box; 
         }
 
-        /* 1. 毛玻璃主卡片 */
         .app-card { 
             background: var(--card-glass); 
             backdrop-filter: blur(15px); 
@@ -31,7 +30,6 @@
             height: fit-content; 
         }
 
-        /* 顶部净资产卡片 */
         .summary-card { 
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
             padding: 22px; border-radius: 24px; color: #fff; 
@@ -50,9 +48,8 @@
         }
         .save-active { animation: save-flash 0.4s ease-out; }
 
-        /* 输入区网格 */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 14px; margin-bottom: 24px; }
-        .label-wrap { display: flex; align-items: center; margin-bottom: 6px; font-size: 12px; color: #64748b; font-weight: 600; }
+        .label-wrap { display: flex; align-items: center; margin-bottom: 4px; font-size: 12px; color: #64748b; font-weight: 600; }
         .brand-line { width: 4px; height: 12px; border-radius: 2px; margin-right: 8px; }
         
         .input-box { position: relative; border-bottom: 2px solid #e2e8f0; transition: 0.3s; }
@@ -62,7 +59,6 @@
         input { width: 100%; padding: 10px 0 10px 20px; border: none; background: transparent; font-size: 18px; font-weight: 700; outline: none; color: #1e293b; box-sizing: border-box; }
         .blur-text { filter: blur(6px); pointer-events: none; user-select: none; }
 
-        /* 按钮样式 */
         .btn-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
         .save-btn { 
             background: #1488cc; color: white; border: none; padding: 15px; 
@@ -74,7 +70,6 @@
         .secondary-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .sec-btn { background: rgba(255,255,255,0.5); color: #444; border: 1px solid #ddd; padding: 10px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
-        /* 历史记录标题栏及优化的清空按钮 */
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .section-title { font-size: 13px; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
         
@@ -85,10 +80,11 @@
         }
         .clear-all-btn:active { transform: scale(0.92); background: rgba(231, 76, 60, 0.2); }
 
-        /* 历史记录行样式 */
+        /* 优化后的历史记录布局 */
         .history-list { max-height: 280px; overflow-y: auto; }
         .history-item { 
-            display: grid; grid-template-columns: 1.3fr 1.6fr 30px; 
+            display: grid; 
+            grid-template-columns: 1.2fr 1.8fr 30px; /* 增加日期列占比 */
             align-items: center; padding: 14px 12px; 
             background: rgba(255, 255, 255, 0.5); 
             border-radius: 18px; margin-bottom: 10px; 
@@ -98,13 +94,21 @@
         .history-item:active { transform: scale(0.97); background: rgba(255, 255, 255, 0.9); }
 
         .hist-amount { font-size: 14px; font-weight: 800; font-family: "DIN Alternate", sans-serif; }
-        .hist-time-center { font-size: 10px; color: #94a3b8; text-align: center; line-height: 1.2; }
+        
+        /* 调大日期字体 */
+        .hist-time-center { 
+            font-size: 12px; /* 从10px调大至12px */
+            color: #64748b; /* 颜色略微加深提高可读性 */
+            text-align: center; 
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        
         .diff-tag { font-size: 9px; padding: 2px 6px; border-radius: 5px; font-weight: 800; margin-top: 4px; width: fit-content; }
         .diff-up { background: #dcfce7; color: #15803d; }
         .diff-down { background: #fee2e2; color: #b91c1c; }
         .del-btn { width: 28px; height: 28px; border-radius: 10px; background: #fff; border: 1px solid #eee; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* 趋势图 */
         .chart-box { width: 100%; height: 160px; margin-top: 15px; }
         .chart-svg { width: 100%; height: 130px; overflow: visible; }
         .axis-label { font-size: 9px; fill: #aaa; }
@@ -274,7 +278,7 @@
         max += pad; min -= pad;
         document.getElementById('y-max').textContent = (max/10000).toFixed(1)+'w';
         document.getElementById('y-min').textContent = (min/10000).toFixed(1)+'w';
-        document.getElementById('x-start').textContent = data[0].day;
+        document.getElementById('x-start').textContent = data.day;
         document.getElementById('x-end').textContent = data[data.length-1].day;
         const pts = vals.map((v, i) => {
             const x = (i/(vals.length-1)) * w;
@@ -295,8 +299,7 @@
         csv += h.map(r => [r.time, r.amount, ...ASSET_KEYS.map(k => (r.detail?r.detail[k]:0))].join(",")).join("\n");
         const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'})); a.download = `财富备份.csv`; a.click();
     }
-    function importData(inp) { /* 导入逻辑保留 */ }
-
+    
     inputs.forEach(i => i.addEventListener('input', (e) => {
         let v = e.target.value.replace(/[^\d.]/g, "").replace(/\.(?=.*\.)/g, "");
         e.target.value = v;
