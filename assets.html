@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>财富看板-UI精修版</title>
+    <title>财富看板-专业版</title>
     <style>
         :root {
             --ali: #1677ff; --wx: #07c160; --ths: #ff4d4f;
             --cry: #f7931a; --cmb: #c51d24; --gjj: #0052d9;
-            --debt: #334155; --up: #2ecc71; --down: #e74c3c;
+            --debt: #334155; --receiv: #f1c40f; --up: #2ecc71; --down: #e74c3c;
             --app-bg: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
             --card-glass: rgba(255, 255, 255, 0.88);
         }
@@ -80,11 +80,9 @@
         }
         .clear-all-btn:active { transform: scale(0.92); background: rgba(231, 76, 60, 0.2); }
 
-        /* 优化后的历史记录布局 */
         .history-list { max-height: 280px; overflow-y: auto; }
         .history-item { 
-            display: grid; 
-            grid-template-columns: 1.2fr 1.8fr 30px; /* 增加日期列占比 */
+            display: grid; grid-template-columns: 1.2fr 1.8fr 30px; 
             align-items: center; padding: 14px 12px; 
             background: rgba(255, 255, 255, 0.5); 
             border-radius: 18px; margin-bottom: 10px; 
@@ -94,15 +92,7 @@
         .history-item:active { transform: scale(0.97); background: rgba(255, 255, 255, 0.9); }
 
         .hist-amount { font-size: 14px; font-weight: 800; font-family: "DIN Alternate", sans-serif; }
-        
-        /* 调大日期字体 */
-        .hist-time-center { 
-            font-size: 12px; /* 从10px调大至12px */
-            color: #64748b; /* 颜色略微加深提高可读性 */
-            text-align: center; 
-            font-variant-numeric: tabular-nums;
-            white-space: nowrap;
-        }
+        .hist-time-center { font-size: 12px; color: #64748b; text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
         
         .diff-tag { font-size: 9px; padding: 2px 6px; border-radius: 5px; font-weight: 800; margin-top: 4px; width: fit-content; }
         .diff-up { background: #dcfce7; color: #15803d; }
@@ -153,7 +143,13 @@
             <div class="label-wrap"><div class="brand-line" style="background:var(--gjj)"></div>公积金</div>
             <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="provident" data-name="公积金" placeholder="0.00"></div>
         </div>
-        <div class="item" style="grid-column: span 2;">
+        <!-- 新增：借出 / 应收 -->
+        <div class="item">
+            <div class="label-wrap"><div class="brand-line" style="background:var(--receiv)"></div>借出 / 应收</div>
+            <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="receivable" data-name="借出" placeholder="0.00"></div>
+        </div>
+        <!-- 负债项 -->
+        <div class="item">
             <div class="label-wrap"><div class="brand-line" style="background:var(--debt)"></div>欠款 / 负债</div>
             <div class="input-box"><input type="text" inputmode="decimal" class="asset-input" id="debt" data-name="负债" placeholder="0.00" style="color:var(--down)"></div>
         </div>
@@ -190,7 +186,8 @@
     const resDisp = document.getElementById('res');
     const timeDisp = document.getElementById('last-update');
     const histList = document.getElementById('hist-list');
-    const ASSET_KEYS = ['alipay', 'wechat', 'ths', 'crypto', 'cmb', 'provident', 'debt'];
+    // 更新了 KEY 列表
+    const ASSET_KEYS = ['alipay', 'wechat', 'ths', 'crypto', 'cmb', 'provident', 'receivable', 'debt'];
     let isPrivate = localStorage.getItem('v_privacy') === 'true';
 
     window.onload = () => {
