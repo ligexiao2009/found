@@ -195,6 +195,8 @@
             const v = localStorage.getItem('v_all_fn_' + k);
             if (v) document.getElementById(k).value = v;
         });
+        const savedTime = localStorage.getItem('v_all_fn_last_update');
+        if (savedTime) timeDisp.innerText = savedTime;
         update(false);
         applyPrivacyStyle();
         render();
@@ -224,7 +226,11 @@
         ASSET_KEYS.forEach(k => { if(k !== 'debt') assets += (parseFloat(document.getElementById(k).value) || 0); });
         const netWorth = assets - debt;
         resDisp.innerText = netWorth.toLocaleString('zh-CN', {minimumFractionDigits: 2});
-        if (shoudTime) timeDisp.innerText = new Date().toLocaleString('zh-CN', {hour12: false});
+        if (shoudTime) {
+            const timeStr = new Date().toLocaleString('zh-CN', {hour12: false});
+            timeDisp.innerText = timeStr;
+            localStorage.setItem('v_all_fn_last_update', timeStr);
+        }
     }
 
     function saveRecord() {
@@ -232,6 +238,9 @@
         const now = new Date();
         const fullTime = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
         const chartDay = (now.getMonth()+1) + '-' + now.getDate();
+        const timeStr = now.toLocaleString('zh-CN', {hour12: false});
+        timeDisp.innerText = timeStr;
+        localStorage.setItem('v_all_fn_last_update', timeStr);
         let detail = {};
         ASSET_KEYS.forEach(k => detail[k] = document.getElementById(k).value || "0");
         let h = JSON.parse(localStorage.getItem('v_all_fn_hist') || "[]");
@@ -339,6 +348,10 @@
                     history.reverse();
                     localStorage.setItem('v_all_fn_hist', JSON.stringify(history));
                     const latest = history[0];
+                    if (latest.time) {
+                        timeDisp.innerText = latest.time;
+                        localStorage.setItem('v_all_fn_last_update', latest.time);
+                    }
                     if (latest.detail) {
                         ASSET_KEYS.forEach(k => {
                             if (latest.detail[k]) {
