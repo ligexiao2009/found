@@ -2,14 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 关联刚才创建的清单 -->
-	<link rel="manifest" href="manifest.json">
-
-	<!-- iOS 专用配置：隐藏 Safari 地址栏和状态栏 -->
+    <link rel="manifest" href="manifest.json">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<meta name="apple-mobile-web-app-title" content="基金加仓分析">
-    <!-- viewport-fit=cover 是消除顶部黑边的核心 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>基金加仓分析</title>
     <style>
@@ -17,14 +13,13 @@
             --ios-blue: #007AFF;
             --ios-red: #FF3B30;
             --ios-green: #34C759;
-            --ios-bg: #F2F2F7; /* 标准 iOS 列表背景色 */
+            --ios-bg: #F2F2F7;
             --ios-card: #FFFFFF;
             --ios-input: #E9E9EB;
             --ios-label: #8E8E93;
             --ios-orange: #FF9500;
         }
 
-        /* 基础重置：让背景色撑满全屏，消除顶部黑块 */
         html, body {
             height: 100%;
             margin: 0;
@@ -39,7 +34,6 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            /* 处理刘海屏安全区域 */
             padding: env(safe-area-inset-top) 20px 40px;
         }
 
@@ -49,7 +43,7 @@
             background: var(--ios-card);
             border-radius: 28px;
             padding: 24px 20px;
-            margin-top: 10px; /* 距离顶部稍微留一点呼吸感 */
+            margin-top: 10px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.04);
         }
 
@@ -77,7 +71,6 @@
             -webkit-appearance: none;
         }
 
-        /* 计划记录区（浅橙色风格） */
         .record-section {
             background: #FFF9F2;
             border-radius: 18px;
@@ -125,7 +118,6 @@
             margin-top: 2px;
         }
 
-        /* 结果面板：紧凑、清晰 */
         .res-panel { margin-top: 10px; border-top: 0.5px solid #F2F2F7; padding-top: 15px; }
         .res-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 15px; }
         .res-row b { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; }
@@ -139,7 +131,7 @@
             text-decoration: none;
             opacity: 0.8;
         }
-        .single-gain { font-size: 11px; font-weight: 700; margin-left: 4px; }
+        .single-gain, .single-loss { font-size: 11px; font-weight: 700; margin-left: 4px; }
     </style>
 </head>
 <body>
@@ -153,8 +145,8 @@
                 <input type="number" id="currentPrice" class="input-field" value="1.0000" step="0.0001" oninput="calculate(true)">
             </div>
             <div class="input-box">
-                <span class="label-text">2. 持有总额 (元)</span>
-                <input type="number" id="display_total" class="input-field" value="10000" readonly style="color:#8E8E93">
+                <span class="label-text">2. 持有总股数</span>
+                <input type="number" id="display_total_shares" class="input-field" value="0" readonly style="color:#8E8E93">
             </div>
         </div>
 
@@ -172,11 +164,12 @@
             <div class="res-row"><span>回本需涨幅</span><b id="res-need">0.00%</b></div>
         </div>
 
-        <a href="#" class="reset-link" onclick="clearAll()">↺ 重置模拟数据</a>
+        <a href="#" class="reset-link" onclick="clearAll()">↺ 重置并清空本地缓存数据</a>
     </div>
 
     <script>
         let isManualPrice = false;
+        const STORAGE_KEY = 'fund_calc_data_v2'; // 更新Key版本避免冲突
 
         function calculate(fromManual = false) {
             if (fromManual) isManualPrice = true;
@@ -184,9 +177,9 @@
             let totalAmount = 0, totalShares = 0, lastPrice = null;
 
             records.forEach(group => {
-                const amt = parseFloat(group.querySelector('.amt').value) || 0;
+                const shares = parseFloat(group.querySelector('.shares').value) || 0;
                 const pri = parseFloat(group.querySelector('.pri').value) || 0;
-                if (amt > 0 && pri > 0) { lastPrice = pri; }
+                if (shares > 0 && pri > 0) { lastPrice = pri; }
             });
 
             if (!isManualPrice && lastPrice !== null) {
@@ -196,38 +189,65 @@
             const currP = parseFloat(document.getElementById('currentPrice').value) || 0;
 
             records.forEach(group => {
-                const amt = parseFloat(group.querySelector('.amt').value) || 0;
+                const shares = parseFloat(group.querySelector('.shares').value) || 0;
                 const pri = parseFloat(group.querySelector('.pri').value) || 0;
                 const gainEl = group.querySelector('.single-gain');
-                if (amt > 0 && pri > 0) {
-                    totalAmount += amt;
-                    totalShares += amt / pri;
-                    const gain = ((currP - pri) / pri * 100).toFixed(2);
-                    gainEl.innerText = (gain >= 0 ? '+' : '') + gain + '%';
-                    gainEl.style.color = gain >= 0 ? 'var(--ios-red)' : 'var(--ios-green)';
+                const lossEl = group.querySelector('.single-loss');
+                
+                if (shares > 0 && pri > 0) {
+                    const cost = shares * pri;
+                    totalAmount += cost;
+                    totalShares += shares;
+                    
+                    // 计算单笔收益率
+                    const gainPercent = ((currP - pri) / pri * 100).toFixed(2);
+                    gainEl.innerText = (gainPercent >= 0 ? '+' : '') + gainPercent + '%';
+                    gainEl.style.color = gainPercent >= 0 ? 'var(--ios-red)' : 'var(--ios-green)';
+
+                    // 计算单笔盈亏金额
+                    const singleLossAmt = (shares * currP) - cost;
+                    lossEl.innerText = (singleLossAmt >= 0 ? '盈:' : '亏:') + singleLossAmt.toFixed(2);
+                    lossEl.style.color = singleLossAmt >= 0 ? 'var(--ios-red)' : 'var(--ios-green)';
+                } else {
+                    gainEl.innerText = '0%';
+                    lossEl.innerText = '盈:0.00';
                 }
             });
 
-            if (totalShares <= 0) return;
+            if (totalShares <= 0) {
+                resetResults();
+                saveToLocal();
+                return;
+            }
 
             const avgCost = totalAmount / totalShares;
-            const loss = (totalShares * currP) - totalAmount;
-            const lossP = (loss / totalAmount * 100).toFixed(2);
+            const totalLoss = (totalShares * currP) - totalAmount;
+            const totalLossP = (totalLoss / totalAmount * 100).toFixed(2);
             const need = currP > 0 ? ((avgCost - currP) / currP * 100).toFixed(2) : 0;
 
             document.getElementById('res-totalA').innerText = '¥' + totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2});
             document.getElementById('res-avgP').innerText = avgCost.toFixed(4);
-            document.getElementById('res-loss').innerText = (loss >= 0 ? '+' : '') + loss.toFixed(2);
-            document.getElementById('res-loss').style.color = loss >= 0 ? 'var(--ios-red)' : 'var(--ios-green)';
-            document.getElementById('res-percent').innerText = (loss >= 0 ? '+' : '') + lossP + '%';
-            document.getElementById('res-percent').style.color = loss >= 0 ? 'var(--ios-red)' : 'var(--ios-green)';
+            document.getElementById('res-loss').innerText = (totalLoss >= 0 ? '+' : '') + totalLoss.toFixed(2);
+            document.getElementById('res-loss').style.color = totalLoss >= 0 ? 'var(--ios-red)' : 'var(--ios-green)';
+            document.getElementById('res-percent').innerText = (totalLoss >= 0 ? '+' : '') + totalLossP + '%';
+            document.getElementById('res-percent').style.color = totalLoss >= 0 ? 'var(--ios-red)' : 'var(--ios-green)';
             document.getElementById('res-need').innerText = need + '%';
             document.getElementById('res-need').style.color = need > 0 ? 'var(--ios-green)' : 'var(--ios-red)';
-            document.getElementById('display_total').value = totalAmount.toFixed(0);
+            document.getElementById('display_total_shares').value = totalShares;
+
+            saveToLocal();
         }
 
-        function addRecord(defaultAmt = "", defaultPri = "") {
-            isManualPrice = false;
+        function resetResults() {
+            document.getElementById('res-totalA').innerText = '¥0.00';
+            document.getElementById('res-avgP').innerText = '0.0000';
+            document.getElementById('res-loss').innerText = '0.00';
+            document.getElementById('res-percent').innerText = '0.00%';
+            document.getElementById('res-need').innerText = '0.00%';
+            document.getElementById('display_total_shares').value = 0;
+        }
+
+        function addRecord(defaultShares = "", defaultPri = "", skipCalc = false) {
             const list = document.getElementById('buy-list');
             const div = document.createElement('div');
             div.className = 'record-card record-group';
@@ -235,8 +255,11 @@
                 <div class="card-del-btn" onclick="this.parentElement.remove();calculate()">×</div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div class="input-box">
-                        <span class="label-text" style="font-size:11px;">买入金额</span>
-                        <input type="number" class="input-field amt" style="padding:10px;" value="${defaultAmt}" oninput="calculate()">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="label-text" style="font-size:11px;">买入股数</span>
+                            <span class="single-loss" style="color:var(--ios-label)">盈:0.00</span>
+                        </div>
+                        <input type="number" class="input-field shares" style="padding:10px;" value="${defaultShares}" oninput="calculate()">
                     </div>
                     <div class="input-box">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -248,18 +271,59 @@
                 </div>
             `;
             list.appendChild(div);
-            calculate();
+            if(!skipCalc) calculate();
         }
 
-        function clearAll() {
-            if(confirm("确定重置所有模拟数据吗？")) {
-                isManualPrice = false;
+        function saveToLocal() {
+            const records = [];
+            document.querySelectorAll('.record-group').forEach(group => {
+                records.push({
+                    shares: group.querySelector('.shares').value,
+                    pri: group.querySelector('.pri').value
+                });
+            });
+
+            const data = {
+                currentPrice: document.getElementById('currentPrice').value,
+                isManualPrice: isManualPrice,
+                records: records
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function loadFromLocal() {
+            const rawData = localStorage.getItem(STORAGE_KEY);
+            if (!rawData) {
+                addRecord(1000, 1.000);
+                return;
+            }
+            try {
+                const data = JSON.parse(rawData);
+                document.getElementById('currentPrice').value = data.currentPrice || "1.0000";
+                isManualPrice = data.isManualPrice || false;
                 document.getElementById('buy-list').innerHTML = '';
-                addRecord(10000, 1.000);
+                if (data.records && data.records.length > 0) {
+                    data.records.forEach(item => addRecord(item.shares, item.pri, true));
+                } else {
+                    addRecord(1000, 1.000, true);
+                }
+                calculate();
+            } catch (e) {
+                addRecord(1000, 1.000);
             }
         }
 
-        window.onload = () => addRecord(10000, 1.000);
+        function clearAll() {
+            if(confirm("确定清除所有数据并清空本地缓存吗？")) {
+                localStorage.removeItem(STORAGE_KEY);
+                isManualPrice = false;
+                document.getElementById('buy-list').innerHTML = '';
+                document.getElementById('currentPrice').value = "1.0000";
+                addRecord(1000, 1.000);
+            }
+        }
+
+        window.onload = loadFromLocal;
     </script>
 </body>
 </html>
