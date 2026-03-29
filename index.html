@@ -565,6 +565,18 @@
             return url.origin === window.location.origin;
         }
 
+        function resetNavigationState() {
+            document.body.classList.remove('is-navigating');
+        }
+
+        window.addEventListener('pageshow', resetNavigationState);
+        window.addEventListener('focus', resetNavigationState);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                resetNavigationState();
+            }
+        });
+
         navigableLinks.forEach(link => {
             const warmup = () => {
                 link.classList.add('is-prefetching');
