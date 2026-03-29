@@ -122,83 +122,15 @@
         }
         .theme-btn:active { transform: scale(0.9); }
 
-        .hero-panel {
-            margin: 0 16px 6px;
-            padding: 16px 16px 14px;
-            border-radius: 22px;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            background: linear-gradient(135deg, rgba(36, 124, 255, 0.94), rgba(14, 165, 233, 0.84));
-            color: #FFFFFF;
-            box-shadow: 0 18px 36px rgba(36, 124, 255, 0.22);
-        }
-
-        :root[data-theme='dark'] .hero-panel {
-            background: linear-gradient(135deg, rgba(30, 64, 175, 0.96), rgba(8, 145, 178, 0.9));
-            box-shadow: 0 20px 42px rgba(2, 8, 23, 0.4);
-        }
-
-        .hero-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            opacity: 0.78;
-        }
-
-        .hero-kicker::before {
-            content: '';
+        .theme-btn svg {
             width: 18px;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.7);
-        }
-
-        .hero-title {
-            margin: 10px 0 6px;
-            font-size: 22px;
-            line-height: 1.24;
-            letter-spacing: -0.45px;
-            font-weight: 800;
-        }
-
-        .hero-sub {
-            margin: 0;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .hero-stats {
-            margin-top: 14px;
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 8px;
-        }
-
-        .hero-stat {
-            padding: 10px 10px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .hero-stat-label {
-            display: block;
-            font-size: 10px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            opacity: 0.68;
-            margin-bottom: 5px;
-        }
-
-        .hero-stat-value {
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            line-height: 1.4;
+            height: 18px;
+            stroke: var(--text-main);
+            stroke-width: 1.9;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
         }
 
         .card-badge {
@@ -359,14 +291,6 @@
         .bottom-spacer { height: 40px; }
 
         @media (max-width: 480px) {
-            .hero-stats {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-title {
-                font-size: 20px;
-            }
-
             .section-title {
                 font-size: 17px;
             }
@@ -404,28 +328,8 @@
                 <h1>投资助手</h1>
                 <p>Portfolio Planner</p>
             </div>
-            <div id="modeBtn" class="theme-btn" onclick="toggleTheme()">🌗</div>
+            <div id="modeBtn" class="theme-btn" onclick="toggleTheme()" aria-label="切换主题"></div>
         </div>
-
-        <section class="hero-panel">
-            <span class="hero-kicker">Dashboard</span>
-            <h2 class="hero-title">先看持仓，再处理记录和计划。</h2>
-            <p class="hero-sub">首页入口按使用顺序重新整理，重点内容更靠前，查找路径更短。</p>
-            <div class="hero-stats">
-                <div class="hero-stat">
-                    <span class="hero-stat-label">核心入口</span>
-                    <span class="hero-stat-value">持仓看板放在第一位</span>
-                </div>
-                <div class="hero-stat">
-                    <span class="hero-stat-label">记录管理</span>
-                    <span class="hero-stat-value">资产、理财、随手记</span>
-                </div>
-                <div class="hero-stat">
-                    <span class="hero-stat-label">分析工具</span>
-                    <span class="hero-stat-value">加仓、回撤、止盈预演</span>
-                </div>
-            </div>
-        </section>
 
         <div class="section-header">
             <span class="section-title">资产与记录</span>
@@ -568,10 +472,28 @@
     <script>
         const html = document.documentElement;
         const modeBtn = document.getElementById('modeBtn');
+        const sunIcon = `
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2.5v2.5"></path>
+                <path d="M12 19v2.5"></path>
+                <path d="M4.9 4.9l1.8 1.8"></path>
+                <path d="M17.3 17.3l1.8 1.8"></path>
+                <path d="M2.5 12H5"></path>
+                <path d="M19 12h2.5"></path>
+                <path d="M4.9 19.1l1.8-1.8"></path>
+                <path d="M17.3 6.7l1.8-1.8"></path>
+            </svg>
+        `;
+        const moonIcon = `
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 15.2A7.9 7.9 0 0 1 8.8 4 8.8 8.8 0 1 0 20 15.2z"></path>
+            </svg>
+        `;
 
         function updateUI(theme) {
             html.setAttribute('data-theme', theme);
-            modeBtn.innerText = theme === 'dark' ? '☀️' : '🌗';
+            modeBtn.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
         }
 
         function toggleTheme() {
