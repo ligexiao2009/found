@@ -75,10 +75,32 @@
             transition: background-color 0.35s ease, color 0.35s ease;
         }
 
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: color-mix(in srgb, var(--bg-color) 78%, white 22%);
+            opacity: 0;
+            transition: opacity 0.22s ease;
+        }
+
+        body.is-navigating::after {
+            opacity: 0.18;
+        }
+
         .container {
             width: 100%;
             max-width: 500px;
             padding-bottom: 44px;
+            transition: transform 0.22s ease, opacity 0.22s ease, filter 0.22s ease;
+            transform-origin: top center;
+        }
+
+        body.is-navigating .container {
+            opacity: 0;
+            transform: translateY(10px) scale(0.992);
+            filter: blur(1px);
         }
 
         /* 头部样式 */
@@ -212,6 +234,11 @@
             background-color: var(--group-bg);
             transform: scale(0.988);
             box-shadow: var(--shadow-press);
+        }
+
+        .menu-card.is-prefetching .card-icon {
+            transform: scale(1.03);
+            transition: transform 0.18s ease;
         }
 
         .card-icon {
@@ -472,6 +499,8 @@
     <script>
         const html = document.documentElement;
         const modeBtn = document.getElementById('modeBtn');
+        const navigableLinks = Array.from(document.querySelectorAll('.menu-card[href]'));
+        const prefetchedLinks = new Set();
         const sunIcon = `
             <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="4"></circle>
@@ -512,6 +541,49 @@
         // 监听系统变化
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
             if(!localStorage.getItem('theme')) updateUI(e.matches ? 'dark' : 'light');
+        });
+
+        function prefetchPage(href) {
+            if (!href || prefetchedLinks.has(href)) return;
+            prefetchedLinks.add(href);
+
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = href;
+            link.as = 'document';
+            document.head.appendChild(link);
+        }
+
+        function canHandleSmoothNavigation(event, anchor) {
+            if (!anchor) return false;
+            if (anchor.target && anchor.target !== '_self') return false;
+            if (anchor.hasAttribute('download')) return false;
+            if (event.defaultPrevented) return false;
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+
+            const url = new URL(anchor.href, window.location.href);
+            return url.origin === window.location.origin;
+        }
+
+        navigableLinks.forEach(link => {
+            const warmup = () => {
+                link.classList.add('is-prefetching');
+                prefetchPage(link.href);
+                window.setTimeout(() => link.classList.remove('is-prefetching'), 180);
+            };
+
+            link.addEventListener('pointerenter', warmup, { passive: true });
+            link.addEventListener('touchstart', warmup, { passive: true });
+
+            link.addEventListener('click', event => {
+                if (!canHandleSmoothNavigation(event, link)) return;
+
+                event.preventDefault();
+                document.body.classList.add('is-navigating');
+                window.setTimeout(() => {
+                    window.location.href = link.href;
+                }, 180);
+            });
         });
     </script>
 </body>
